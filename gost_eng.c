@@ -49,6 +49,7 @@ static int gost_cipher_nids[] = {
         NID_grasshopper_ctr,
         NID_magma_cbc,
         NID_magma_ctr,
+        NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm,
         0
 };
 
@@ -114,38 +115,40 @@ static int gost_engine_finish(ENGINE* e) {
 }
 
 static int gost_engine_destroy(ENGINE* e) {
-  digest_gost_destroy();
-  digest_gost2012_256_destroy();
-  digest_gost2012_512_destroy();
+    digest_gost_destroy();
+    digest_gost2012_256_destroy();
+    digest_gost2012_512_destroy();
 
-  imit_gost_cpa_destroy();
-  imit_gost_cp_12_destroy();
-  magma_omac_destroy();
-  grasshopper_omac_destroy();
+    imit_gost_cpa_destroy();
+    imit_gost_cp_12_destroy();
+    magma_omac_destroy();
+    grasshopper_omac_destroy();
+    grasshopper_omac_acpkm_destroy();
 
-  cipher_gost_destroy();
+    cipher_gost_destroy();
+    cipher_gost_grasshopper_destroy();
 
-  gost_param_free();
+    gost_param_free();
 
-  pmeth_GostR3410_2001 = NULL;
-  pmeth_Gost28147_MAC = NULL;
-  pmeth_GostR3410_2012_256 = NULL;
-  pmeth_GostR3410_2012_512 = NULL;
-  pmeth_Gost28147_MAC_12 = NULL;
-  pmeth_magma_mac = NULL;
-  pmeth_grasshopper_mac = NULL;
+    pmeth_GostR3410_2001 = NULL;
+    pmeth_Gost28147_MAC = NULL;
+    pmeth_GostR3410_2012_256 = NULL;
+    pmeth_GostR3410_2012_512 = NULL;
+    pmeth_Gost28147_MAC_12 = NULL;
+    pmeth_magma_mac = NULL;
+    pmeth_grasshopper_mac = NULL;
 
-  ameth_GostR3410_2001 = NULL;
-  ameth_Gost28147_MAC = NULL;
-  ameth_GostR3410_2012_256 = NULL;
-  ameth_GostR3410_2012_512 = NULL;
-  ameth_Gost28147_MAC_12 = NULL;
-  ameth_magma_mac = NULL;
-  ameth_grasshopper_mac = NULL;
+    ameth_GostR3410_2001 = NULL;
+    ameth_Gost28147_MAC = NULL;
+    ameth_GostR3410_2012_256 = NULL;
+    ameth_GostR3410_2012_512 = NULL;
+    ameth_Gost28147_MAC_12 = NULL;
+    ameth_magma_mac = NULL;
+    ameth_grasshopper_mac = NULL;
 
-  ERR_unload_GOST_strings();
-
-  return 1;
+	ERR_unload_GOST_strings();
+	
+    return 1;
 }
 
 static int bind_gost(ENGINE* e, const char* id) {
@@ -252,6 +255,7 @@ static int bind_gost(ENGINE* e, const char* id) {
         || !EVP_add_cipher(cipher_gost_grasshopper_cfb())
         || !EVP_add_cipher(cipher_gost_grasshopper_ofb())
         || !EVP_add_cipher(cipher_gost_grasshopper_ctr())
+        || !EVP_add_cipher(cipher_gost_grasshopper_ctracpkm())
         || !EVP_add_cipher(cipher_magma_cbc())
         || !EVP_add_cipher(cipher_magma_ctr())
         || !EVP_add_digest(digest_gost())
@@ -298,6 +302,8 @@ static int gost_digests(ENGINE* e, const EVP_MD** digest,
         *digest = magma_omac();
     } else if (nid == NID_grasshopper_mac) {
         *digest = grasshopper_omac();
+    } else if (nid == NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac) {
+        *digest = grasshopper_omac_acpkm();
     } else {
         ok = 0;
         *digest = NULL;
@@ -331,6 +337,8 @@ static int gost_ciphers(ENGINE* e, const EVP_CIPHER** cipher,
         *cipher = cipher_gost_grasshopper_ofb();
     } else if (nid == NID_grasshopper_ctr) {
         *cipher = cipher_gost_grasshopper_ctr();
+    } else if (nid == NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm) {
+        *cipher = cipher_gost_grasshopper_ctracpkm();
     } else if (nid == NID_magma_cbc) {
         *cipher = cipher_magma_cbc();
     } else if (nid == NID_magma_ctr) {

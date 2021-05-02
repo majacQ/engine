@@ -7,6 +7,8 @@
 #include "e_gost_err.h"
 #include "gost_lcl.h"
 
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 typedef struct omac_ctx {
 	CMAC_CTX *cmac_ctx;
 	size_t   dgst_size;
@@ -71,7 +73,8 @@ int omac_imit_final(EVP_MD_CTX *ctx, unsigned char *md)
 
 		CMAC_Final(c->cmac_ctx, mac, &mac_size);
 
-    memcpy(md, mac, c->dgst_size);
+    int md_size = EVP_MD_meth_get_result_size(EVP_MD_CTX_md(ctx));
+    memcpy(md, mac, min(md_size, c->dgst_size));
     return 1;
 }
 
@@ -89,9 +92,16 @@ int omac_imit_copy(EVP_MD_CTX *to, const EVP_MD_CTX *from)
 		{
 			return 0;
 		}
+                if (!c_from->cmac_ctx) {
+                    if (c_to->cmac_ctx) {
+                        CMAC_CTX_free(c_to->cmac_ctx);
+                        c_to->cmac_ctx = NULL;
+                    }
+                    return 1;
+                }
 		if (c_to->cmac_ctx == c_from->cmac_ctx)
 		{
-			return 1;
+		    c_to->cmac_ctx = CMAC_CTX_new();
 		}
 		return CMAC_CTX_copy(c_to->cmac_ctx, c_from->cmac_ctx);
 }
@@ -252,7 +262,7 @@ EVP_MD *grasshopper_omac(void)
         EVP_MD *md;
 
         if ((md = EVP_MD_meth_new(NID_grasshopper_mac, NID_undef)) == NULL
-            || !EVP_MD_meth_set_result_size(md, 4)
+            || !EVP_MD_meth_set_result_size(md, 8)
             || !EVP_MD_meth_set_input_blocksize(md, 8)
             || !EVP_MD_meth_set_app_datasize(md, sizeof(OMAC_CTX))
             || !EVP_MD_meth_set_flags(md, 0)
