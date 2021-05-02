@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(ccgost C)
 
+find_package(OpenSSL 1.1 REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+enable_testing()
+
 if (CMAKE_C_COMPILER_ID MATCHES "Clang")
    message(STATUS "Using Clang and adding -Qunused-arguments flag")
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
@@ -20,6 +25,9 @@ else()
 endif()
 
 set(BIN_DIRECTORY bin)
+
+# Same soversion as OpenSSL
+set(GOST_SOVERSION "${OPENSSL_VERSION_MAJOR}.${OPENSSL_VERSION_MINOR}")
 
 set(OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BIN_DIRECTORY})
 
@@ -93,13 +101,23 @@ set(GOST_ENGINE_SOURCE_FILES
         gost_md2012.c
         gost_pmeth.c)
 
+add_test(NAME engine
+	 COMMAND perl run_tests
+	 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+
+add_executable(test_grasshopper test_grasshopper.c)
+target_link_libraries(test_grasshopper gost_engine gost ${OPENSSL_CRYPTO_LIBRARY})
+add_test(NAME grasshopper
+	COMMAND test_grasshopper)
+
 add_library(gost STATIC ${GOST_LIB_SOURCE_FILES})
 set_target_properties(gost PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-add_library(gost_engine MODULE ${GOST_ENGINE_SOURCE_FILES})
+add_library(gost_engine SHARED ${GOST_ENGINE_SOURCE_FILES})
 set_target_properties(gost_engine PROPERTIES PREFIX "" OUTPUT_NAME "gost")
+set_target_properties(gost_engine PROPERTIES VERSION ${GOST_SOVERSION} SOVERSION ${GOST_SOVERSION})
 
-target_link_libraries(gost_engine crypto gost)
+target_link_libraries(gost_engine ${OPENSSL_CRYPTO_LIBRARY} gost)
 
 set(GOST_12_SUM_SOURCE_FILES
         gost12sum.c
