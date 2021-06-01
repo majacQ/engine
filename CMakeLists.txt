@@ -1,3 +1,12 @@
+  <<<<<<< openssl_1_1_0_release1
+cmake_minimum_required(VERSION 2.8)
+project(ccgost C)
+
+find_package(OpenSSL 1.1 REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+enable_testing()
+  =======
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(gost-engine LANGUAGES C)
 
@@ -18,6 +27,7 @@ find_program(OPENSSL_PROGRAM openssl
   PATHS ${OPENSSL_ROOT_DIR} PATH_SUFFIXES apps bin NO_DEFAULT_PATH)
 message(STATUS "Found OpenSSL application: ${OPENSSL_PROGRAM}")
 include_directories(${OPENSSL_INCLUDE_DIR})
+  >>>>>>> master
 
 if (CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(CMAKE_C_FLAGS_RELEASE -O2)
@@ -94,7 +104,14 @@ endif()
 
 set(BIN_DIRECTORY bin)
 
+  <<<<<<< openssl_1_1_0_release1
+# Same soversion as OpenSSL
+set(GOST_SOVERSION "${OPENSSL_VERSION_MAJOR}.${OPENSSL_VERSION_MINOR}")
+
+set(OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BIN_DIRECTORY})
+  =======
 set(OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${BIN_DIRECTORY})
+  >>>>>>> master
 
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY})
@@ -194,6 +211,25 @@ set(GOST_ENGINE_SOURCE_FILES
         gost_eng.c
         )
 
+  <<<<<<< openssl_1_1_0_release1
+add_test(NAME engine
+	 COMMAND perl run_tests
+	 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+
+add_executable(test_grasshopper test_grasshopper.c)
+target_link_libraries(test_grasshopper gost_engine gost ${OPENSSL_CRYPTO_LIBRARY})
+add_test(NAME grasshopper
+	COMMAND test_grasshopper)
+
+add_library(gost STATIC ${GOST_LIB_SOURCE_FILES})
+set_target_properties(gost PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(gost_engine SHARED ${GOST_ENGINE_SOURCE_FILES})
+set_target_properties(gost_engine PROPERTIES PREFIX "" OUTPUT_NAME "gost")
+set_target_properties(gost_engine PROPERTIES VERSION ${GOST_SOVERSION} SOVERSION ${GOST_SOVERSION})
+
+target_link_libraries(gost_engine ${OPENSSL_CRYPTO_LIBRARY} gost)
+  =======
 set(TEST_ENVIRONMENT
         CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
         PERL5LIB=${CMAKE_CURRENT_SOURCE_DIR}/test
@@ -216,6 +252,7 @@ set_tests_properties(ciphers PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT}")
 add_executable(test_curves test_curves.c)
 target_link_libraries(test_curves gost_core ${OPENSSL_CRYPTO_LIBRARY})
 add_test(NAME curves COMMAND test_curves)
+  >>>>>>> master
 
 add_executable(test_params test_params.c)
 target_link_libraries(test_params ${OPENSSL_CRYPTO_LIBRARY})

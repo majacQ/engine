@@ -1,22 +1,47 @@
 #!/usr/bin/perl
+  <<<<<<< openssl_1_1_0_release1
+use Test::More tests => 15;
+  =======
 use Test2::V0;
 plan(2);
+  >>>>>>> master
 use Cwd 'abs_path';
 
 #
 # If this variable is set, engine would be loaded via configuration
 # file. Otherwise - via command line
 # 
+  <<<<<<< openssl_1_1_0_release1
+$use_config = 1;
+  =======
 my $use_config = 1;
+  >>>>>>> master
 
 # prepare data for 
 
 
+  <<<<<<< openssl_1_1_0_release1
+# Set OPENSSL_ENGINES environment variable to just built engine
+if(!defined $ENV{'OPENSSL_ENGINES'}){
+        $ENV{'OPENSSL_ENGINES'} = abs_path("../bin");
+}
+
+$engine=$ENV{'ENGINE_NAME'}||"gost";
+  =======
 my $engine=$ENV{'ENGINE_NAME'}||"gost";
+  >>>>>>> master
 
 # Reopen STDERR to eliminate extra output
 open STDERR, ">>","tests.err";
 
+  <<<<<<< openssl_1_1_0_release1
+
+open F,">","test.cnf";
+if (defined($use_config) && $use_config) {
+	$eng_param = "";
+	open F,">","test.cnf";
+	print F <<EOCFG;
+  =======
 my $F;
 my $eng_param;
 
@@ -25,6 +50,7 @@ if (defined($use_config) && $use_config) {
     $eng_param = "";
     open $F,">","test.cnf";
     print $F <<EOCFG;
+  >>>>>>> master
 openssl_conf = openssl_def
 [openssl_def]
 engines = engines
@@ -35,6 +61,15 @@ default_algorithms = ALL
 
 EOCFG
 } else {
+  <<<<<<< openssl_1_1_0_release1
+	$eng_param = "-engine $engine"
+}
+close F;
+$ENV{'OPENSSL_CONF'}=abs_path('test.cnf');
+
+
+@keys=(['gost2001','A',"-----BEGIN PRIVATE KEY-----
+  =======
     $eng_param = "-engine $engine"
 }
 close $F;
@@ -43,6 +78,7 @@ $ENV{'OPENSSL_CONF'}=abs_path('test.cnf');
 subtest 'keys' => sub {
     plan(15);
     my @keys=(['gost2001','A',"-----BEGIN PRIVATE KEY-----
+  >>>>>>> master
 MEUCAQAwHAYGKoUDAgITMBIGByqFAwICIwEGByqFAwICHgEEIgIgRhUDJ1WQASIf
 nx+aUM2eagzV9dCt6mQ5wdtenr2ZS/Y=
 -----END PRIVATE KEY-----
@@ -118,6 +154,28 @@ ENjS+gA=
 -----END PUBLIC KEY-----
 ']
 );
+  <<<<<<< openssl_1_1_0_release1
+for $keyinfo (@keys) {
+	my ($alg,$paramset,$seckey,$sectext,$pubtext,$pubkey) = @$keyinfo;
+	open F,">",'tmp.pem';
+	print F $seckey;
+	close F;
+	#1.  Прочитать секретный ключ и напечатать публичный и секретный ключи
+	is(`openssl pkey -noout -text -in tmp.pem`,$sectext . $pubtext,
+		"Print key pair $alg:$paramset");
+	#2. Прочитать секретный ключ и вывести публичный (все алгоритмы)
+    is(`openssl pkey -pubout -in tmp.pem`,$pubkey,
+		"Compute public key $alg:$paramset");
+	open F,">","tmp.pem";
+	print F $pubkey;
+	close F;
+	#3. Прочитать публичный и напечать его в виде текста
+	is(`openssl pkey -pubin -noout -in tmp.pem -text`,$pubtext,
+		"Read and print public key $alg:paramset");
+
+}
+unlink "tmp.pem";
+  =======
     for my $keyinfo (@keys) {
         my ($alg,$paramset,$seckey,$sectext,$pubtext,$pubkey) = @$keyinfo;
         open $F,">",'tmp.pem';
@@ -139,6 +197,7 @@ ENjS+gA=
     #unlink "tmp.pem";
 };
 
+  >>>>>>> master
 #4. Сгенерировать ключ два раза (для всех алгоритов и параметров).
 # Проверить что получились числа требуемой длины и они не совпадают
 
@@ -154,6 +213,8 @@ ENjS+gA=
 # убедитсья, что подпись перестала быть корректной.
 
 # 9. Выработать shared ключ по vko
+  <<<<<<< openssl_1_1_0_release1
+  =======
 #    Generate a shared key by vko
 subtest 'derive' => sub {
     my %derives=(
@@ -333,6 +394,7 @@ MIGgMBcGCCqFAwcBAQECMAsGCSqFAwcBAgECAwOBhAAEgYCPdAER26Ym73DSUXBamTLJcntdV3oZ7RRx
     unlink "malice.pub";
     unlink "secret_m.bin";
 };
+  >>>>>>> master
 
 # 10. Разобрать стандартый encrypted key
 

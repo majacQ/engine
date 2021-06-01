@@ -295,12 +295,26 @@ static int gost_engine_finish(ENGINE* e) {
 }
 
 static int gost_engine_destroy(ENGINE* e) {
+  <<<<<<< openssl_1_1_0_release1
+    EVP_delete_digest_alias("streebog256");
+    EVP_delete_digest_alias("streebog512");
+    digest_gost_destroy();
+    digest_gost2012_256_destroy();
+    digest_gost2012_512_destroy();
+
+    imit_gost_cpa_destroy();
+    imit_gost_cp_12_destroy();
+
+    cipher_gost_destroy();
+    cipher_gost_grasshopper_destroy();
+  =======
     int i;
 
     for (i = 0; i < OSSL_NELEM(gost_digest_array); i++)
         GOST_deinit_digest(gost_digest_array[i]);
     for (i = 0; i < OSSL_NELEM(gost_cipher_array); i++)
         GOST_deinit_cipher(gost_cipher_array[i]);
+  >>>>>>> master
 
     gost_param_free();
 
@@ -406,6 +420,11 @@ static int bind_gost_engine(ENGINE* e) {
     for (i = 0; i < OSSL_NELEM(gost_digest_array); i++) {
         if (!EVP_add_digest(GOST_init_digest(gost_digest_array[i])))
             goto end;
+    }
+
+    if(!EVP_add_digest_alias(SN_id_GostR3411_2012_256, "streebog256")
+       ||	!EVP_add_digest_alias(SN_id_GostR3411_2012_512, "streebog512")) {
+        goto end;
     }
 
     ENGINE_register_all_complete();

@@ -27,6 +27,14 @@ typedef struct {
 
 typedef struct {
     gost_grasshopper_cipher_ctx c;
+  <<<<<<< openssl_1_1_0_release1
+    grasshopper_w128_t buffer1;
+} gost_grasshopper_cipher_ctx_ofb;
+
+typedef struct {
+    gost_grasshopper_cipher_ctx c;
+  =======
+  >>>>>>> master
     grasshopper_w128_t partial_buffer;
     unsigned int section_size;  /* After how much bytes mesh the key,
 				   if 0 never mesh and work like plain ctr. */
@@ -97,6 +105,7 @@ static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX* ctx, int type, int arg, v
 
 const EVP_CIPHER* cipher_gost_grasshopper_ctracpkm();
 
+void cipher_gost_grasshopper_destroy(void);
 #if defined(__cplusplus)
 }
 #endif

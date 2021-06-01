@@ -82,6 +82,62 @@ GOST_cipher grasshopper_cfb_cipher = {
     .do_cipher = gost_grasshopper_cipher_do_cfb,
 };
 
+  <<<<<<< openssl_1_1_0_release1
+static struct GRASSHOPPER_CIPHER_PARAMS gost_cipher_params[5] = {
+        [GRASSHOPPER_CIPHER_ECB] = {
+                NID_grasshopper_ecb,
+                gost_grasshopper_cipher_init_ecb,
+                gost_grasshopper_cipher_do_ecb,
+                NULL,
+                16,
+                sizeof(gost_grasshopper_cipher_ctx),
+                0,
+                true
+        },
+        [GRASSHOPPER_CIPHER_CBC] = {
+                NID_grasshopper_cbc,
+                gost_grasshopper_cipher_init_cbc,
+                gost_grasshopper_cipher_do_cbc,
+                NULL,
+                16,
+                sizeof(gost_grasshopper_cipher_ctx),
+                16,
+                true
+        },
+        [GRASSHOPPER_CIPHER_OFB] = {
+                NID_grasshopper_ofb,
+                gost_grasshopper_cipher_init_ofb,
+                gost_grasshopper_cipher_do_ofb,
+                gost_grasshopper_cipher_destroy_ofb,
+                1,
+                sizeof(gost_grasshopper_cipher_ctx_ofb),
+                16,
+                false
+        },
+        [GRASSHOPPER_CIPHER_CFB] = {
+                NID_grasshopper_cfb,
+                gost_grasshopper_cipher_init_cfb,
+                gost_grasshopper_cipher_do_cfb,
+                NULL,
+                1,
+                sizeof(gost_grasshopper_cipher_ctx),
+                16,
+                false
+        },
+        [GRASSHOPPER_CIPHER_CTR] = {
+                NID_grasshopper_ctr,
+                gost_grasshopper_cipher_init_ctr,
+                gost_grasshopper_cipher_do_ctr,
+                gost_grasshopper_cipher_destroy_ctr,
+                1,
+                sizeof(gost_grasshopper_cipher_ctx_ctr),
+		/* IV size is set to match full block, to make it responsibility of
+		 * user to assign correct values (IV || 0), and to make naive context
+		 * copy possible (for software such as openssh) */
+                16,
+                false
+        },
+  =======
 GOST_cipher grasshopper_ctr_cipher = {
     .nid = NID_grasshopper_ctr,
     .template = &grasshopper_template_cipher,
@@ -93,6 +149,7 @@ GOST_cipher grasshopper_ctr_cipher = {
     .init = gost_grasshopper_cipher_init_ctr,
     .do_cipher = gost_grasshopper_cipher_do_ctr,
     .ctx_size = sizeof(gost_grasshopper_cipher_ctx_ctr),
+  >>>>>>> master
 };
 
 GOST_cipher grasshopper_ctr_acpkm_cipher = {
@@ -290,6 +347,8 @@ gost_grasshopper_cipher_init_ctr(EVP_CIPHER_CTX *ctx, const unsigned char
 
     grasshopper_zero128(&c->partial_buffer);
 
+  <<<<<<< openssl_1_1_0_release1
+  =======
     return gost_grasshopper_cipher_init(ctx, key, iv, enc);
 }
 
@@ -306,6 +365,7 @@ gost_grasshopper_cipher_init_ctracpkm(EVP_CIPHER_CTX
     EVP_CIPHER_CTX_set_num(ctx, 0);
     c->section_size = 4096;
 
+  >>>>>>> master
     return gost_grasshopper_cipher_init(ctx, key, iv, enc);
 }
 
@@ -414,16 +474,42 @@ static int gost_grasshopper_cipher_do_cbc(EVP_CIPHER_CTX *ctx, unsigned char *ou
     return 1;
 }
 
+  <<<<<<< openssl_1_1_0_release1
+/* increment counter (128-bit int) by 1 */
+static void ctr128_inc(unsigned char *counter)
+{
+    unsigned int n = 16;
+    unsigned char c;
+
+    do {
+  =======
 void inc_counter(unsigned char *counter, size_t counter_bytes)
 {
     unsigned int n = counter_bytes;
 
     do {
         unsigned char c;
+  >>>>>>> master
         --n;
         c = counter[n];
         ++c;
         counter[n] = c;
+  <<<<<<< openssl_1_1_0_release1
+        if (c) return;
+    } while (n);
+}
+
+int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX* ctx, unsigned char* out,
+                                          const unsigned char* in, size_t inl) {
+    gost_grasshopper_cipher_ctx_ctr* c = (gost_grasshopper_cipher_ctx_ctr*) EVP_CIPHER_CTX_get_cipher_data(ctx);
+    unsigned char* iv = EVP_CIPHER_CTX_iv_noconst(ctx);
+    const unsigned char* current_in = in;
+    unsigned char* current_out = out;
+    grasshopper_w128_t* currentInputBlock;
+    grasshopper_w128_t* currentOutputBlock;
+    unsigned int n = EVP_CIPHER_CTX_num(ctx);
+    size_t lasted;
+  =======
         if (c)
             return;
     } while (n);
@@ -447,6 +533,7 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
     grasshopper_w128_t *currentOutputBlock;
     unsigned int n = EVP_CIPHER_CTX_num(ctx);
     size_t lasted = inl;
+  >>>>>>> master
     size_t i;
     size_t blocks;
     grasshopper_w128_t *iv_buffer;
@@ -460,6 +547,24 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
     EVP_CIPHER_CTX_set_num(ctx, n);
     blocks = lasted / GRASSHOPPER_BLOCK_SIZE;
 
+  <<<<<<< openssl_1_1_0_release1
+    while (n && inl) {
+	*(current_out++) = *(current_in++) ^ c->partial_buffer.b[n];
+	--inl;
+	n = (n + 1) % GRASSHOPPER_BLOCK_SIZE;
+    }
+    EVP_CIPHER_CTX_set_num(ctx, n);
+    size_t blocks = inl / GRASSHOPPER_BLOCK_SIZE;
+
+    grasshopper_w128_t* iv_buffer = (grasshopper_w128_t*) iv;
+
+    // full parts
+    for (i = 0; i < blocks; i++) {
+        currentInputBlock = (grasshopper_w128_t*) current_in;
+        currentOutputBlock = (grasshopper_w128_t*) current_out;
+        grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer, currentOutputBlock, &c->c.buffer);
+        grasshopper_append128(currentOutputBlock, currentInputBlock);
+  =======
     iv_buffer = (grasshopper_w128_t *) iv;
 
     // full parts
@@ -470,6 +575,7 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
                                   &c->partial_buffer, &c->c.buffer);
         grasshopper_plus128(&tmp, &c->partial_buffer, currentInputBlock);
         grasshopper_copy128(currentOutputBlock, &tmp);
+  >>>>>>> master
         ctr128_inc(iv_buffer->b);
         current_in += GRASSHOPPER_BLOCK_SIZE;
         current_out += GRASSHOPPER_BLOCK_SIZE;
@@ -477,15 +583,25 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
     }
 
     if (lasted > 0) {
+  <<<<<<< openssl_1_1_0_release1
+        currentInputBlock = (grasshopper_w128_t*) current_in;
+        currentOutputBlock = (grasshopper_w128_t*) current_out;
+        grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer, &c->partial_buffer, &c->c.buffer);
+  =======
         currentInputBlock = (grasshopper_w128_t *) current_in;
         currentOutputBlock = (grasshopper_w128_t *) current_out;
         grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer,
                                   &c->partial_buffer, &c->c.buffer);
+  >>>>>>> master
         for (i = 0; i < lasted; i++) {
             currentOutputBlock->b[i] =
                 c->partial_buffer.b[i] ^ currentInputBlock->b[i];
         }
+  <<<<<<< openssl_1_1_0_release1
+	EVP_CIPHER_CTX_set_num(ctx, i);
+  =======
         EVP_CIPHER_CTX_set_num(ctx, i);
+  >>>>>>> master
         ctr128_inc(iv_buffer->b);
     }
 
@@ -502,6 +618,16 @@ static inline void apply_acpkm_grasshopper(gost_grasshopper_cipher_ctx_ctr *
     *num &= GRASSHOPPER_BLOCK_MASK;
 }
 
+  <<<<<<< openssl_1_1_0_release1
+/*
+ * Fixed 128-bit IV implementation make shift regiser redundant.
+ */
+static void gost_grasshopper_cnt_next(gost_grasshopper_cipher_ctx_ofb* ctx, grasshopper_w128_t* iv,
+                                      grasshopper_w128_t* buf) {
+    memcpy(&ctx->buffer1, iv, 16);
+    grasshopper_encrypt_block(&ctx->c.encrypt_round_keys, &ctx->buffer1, buf, &ctx->c.buffer);
+    memcpy(iv, buf, 16);
+  =======
 /* If meshing is not configured via ctrl (setting section_size)
  * this function works exactly like plain ctr */
 static int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX *ctx,
@@ -553,6 +679,7 @@ static int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX *ctx,
     EVP_CIPHER_CTX_set_num(ctx, num);
 
     return inl;
+  >>>>>>> master
 }
 
 static int gost_grasshopper_cipher_do_ctracpkm_omac(EVP_CIPHER_CTX *ctx,
@@ -933,9 +1060,26 @@ static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX *ctx, int type, int arg, v
     return 1;
 }
 
+  <<<<<<< openssl_1_1_0_release1
+void cipher_gost_grasshopper_destroy(void)
+{
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_ECB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_ECB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CBC]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CBC] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_OFB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_OFB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CFB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CFB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR] = NULL;
+}
+#if defined(__cplusplus)
+  =======
 /* Called directly by CMAC_ACPKM_Init() */
 const GRASSHOPPER_INLINE EVP_CIPHER *cipher_gost_grasshopper_ctracpkm()
 {
     return GOST_init_cipher(&grasshopper_ctr_acpkm_cipher);
+  >>>>>>> master
 }
 /* vim: set expandtab cinoptions=\:0,l1,t0,g0,(0 sw=4 : */

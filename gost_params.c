@@ -82,6 +82,8 @@ R3410_ec_params R3410_2001_paramset[] = {
      "41ECE55743711A8C3CBF3783CD08C0EE4D4DC440D4641A8F366E550DFDB3BB67",
      "1"}
     ,
+  <<<<<<< openssl_1_1_0_release1
+  =======
     /*
      * 1.2.643.7.1.2.1.1.1 Edvards
      */
@@ -101,6 +103,7 @@ R3410_ec_params R3410_2001_paramset[] = {
      /* cofactor */
      "4"}
     ,
+  >>>>>>> master
     {NID_undef, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 };
 
@@ -168,6 +171,8 @@ R3410_ec_params R3410_2012_512_paramset[] = {
      "1A8F7EDA389B094C2C071E3647A8940F3C123B697578C213BE6DD9E6C8EC7335"
      "DCB228FD1EDF4A39152CBCAAF8C0398828041055F94CEEEC7E21340780FE41BD",
      "1"}
+  <<<<<<< openssl_1_1_0_release1
+  =======
     ,
     {NID_id_tc26_gost_3410_2012_512_paramSetC,
      /* a */
@@ -189,6 +194,7 @@ R3410_ec_params R3410_2012_512_paramset[] = {
      "F5CE40D95B5EB899ABBCCFF5911CB8577939804D6527378B8C108C3D2090FF9B"
      "E18E2D33E3021ED2EF32D85822423B6304F726AA854BAE07D0396E9A9ADDC40F",
      "4"}
+  >>>>>>> master
     ,
     {NID_undef, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 };
