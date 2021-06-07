@@ -17,6 +17,9 @@ include(CheckCSourceRuns)
 
 enable_testing()
 
+  <<<<<<< gost_provider
+find_package(OpenSSL 3.0 REQUIRED)
+  =======
   <<<<<<< magma_impl
 find_package(OpenSSL 1.0.2 REQUIRED)
   =======
@@ -29,6 +32,7 @@ endif()
 find_program(OPENSSL_PROGRAM openssl
   PATHS ${OPENSSL_ROOT_DIR} PATH_SUFFIXES apps bin NO_DEFAULT_PATH)
 message(STATUS "Found OpenSSL application: ${OPENSSL_PROGRAM}")
+  >>>>>>> master
   >>>>>>> master
 include_directories(${OPENSSL_INCLUDE_DIR})
   >>>>>>> master
@@ -71,9 +75,7 @@ endif()
 include (TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
- message(STATUS "BIG_ENDIAN")
 else()
- message(STATUS "LITTLE_ENDIAN")
  add_definitions(-DL_ENDIAN)
 endif()
 
@@ -225,6 +227,81 @@ set(GOST_ENGINE_SOURCE_FILES
         gost_eng.c
         )
 
+  <<<<<<< gost_provider
+set(GOST_PROVIDER_SOURCE_FILES
+        gost_prov.c)
+
+#add_executable(test_digest test_digest.c)
+#target_link_libraries(test_digest gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME digest
+#	COMMAND test_digest)
+#
+#add_executable(test_curves test_curves.c)
+#target_link_libraries(test_curves gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME curves
+#	COMMAND test_curves)
+#
+#add_executable(test_params test_params.c)
+#target_link_libraries(test_params gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME parameters
+#	COMMAND test_params)
+#
+#add_executable(test_sign test_sign.c)
+#target_link_libraries(test_sign gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME sign/verify
+#	COMMAND test_sign)
+#
+#add_executable(test_tls test_tls.c)
+#target_link_libraries(test_tls gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+#add_test(NAME TLS
+#	COMMAND test_tls)
+#
+#add_executable(test_context test_context.c)
+#target_link_libraries(test_context gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME context
+#	COMMAND test_context)
+#
+#add_executable(test_grasshopper test_grasshopper.c)
+#target_link_libraries(test_grasshopper gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME grasshopper
+#	COMMAND test_grasshopper)
+#
+#add_executable(test_keyexpimp test_keyexpimp.c)
+##target_compile_definitions(test_keyexpimp PUBLIC -DOPENSSL_LOAD_CONF)
+#target_link_libraries(test_keyexpimp gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME keyexpimp
+#	COMMAND test_keyexpimp)
+#
+#add_executable(test_gost89 test_gost89.c)
+#target_link_libraries(test_gost89 gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+#add_test(NAME gost89
+#	COMMAND test_gost89)
+
+if(NOT ASAN)
+add_test(NAME engine
+	COMMAND perl run_tests
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
+set_tests_properties(engine PROPERTIES ENVIRONMENT
+	"OPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR};OPENSSL_ENGINES=${OUTPUT_DIRECTORY};OPENSSL_CONF=${CMAKE_SOURCE_DIR}/test/empty.cnf")
+endif()
+
+#add_executable(sign benchmark/sign.c)
+#target_link_libraries(sign gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY} ${CLOCK_GETTIME_LIB})
+#
+## All that may need to load just built engine will have path to it defined.
+#set(BINARY_TESTS_TARGETS
+#        test_digest
+#        test_curves
+#        test_params
+#        test_sign
+#        test_context
+#        test_grasshopper
+#        test_keyexpimp
+#        test_gost89
+#        test_tls
+#        )
+#set_property(TARGET ${BINARY_TESTS_TARGETS} APPEND PROPERTY COMPILE_DEFINITIONS ENGINE_DIR="${OUTPUT_DIRECTORY}")
+  =======
   <<<<<<< openssl_1_1_0_release1
 add_test(NAME engine
 	 COMMAND perl run_tests
@@ -334,6 +411,7 @@ set(BINARY_TESTS_TARGETS
   >>>>>>> master
         )
 set_property(TARGET ${BINARY_TESTS_TARGETS} APPEND PROPERTY COMPILE_DEFINITIONS ENGINE_DIR="${OUTPUT_DIRECTORY}")
+  >>>>>>> master
 
 add_executable(test_grasshopper test_grasshopper.c)
 target_link_libraries(test_grasshopper gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
@@ -347,6 +425,17 @@ add_test(NAME engine
 add_library(gost_core STATIC ${GOST_LIB_SOURCE_FILES})
 set_target_properties(gost_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+  <<<<<<< gost_provider
+#add_library(gost_engine SHARED ${GOST_ENGINE_SOURCE_FILES})
+#set_target_properties(gost_engine PROPERTIES PREFIX "" OUTPUT_NAME "gost")
+#set_target_properties(gost_engine PROPERTIES VERSION ${GOST_SOVERSION} SOVERSION ${GOST_SOVERSION})
+#target_link_libraries(gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+
+add_library(gost_provider SHARED ${GOST_PROVIDER_SOURCE_FILES} ${GOST_ENGINE_SOURCE_FILES})
+set_target_properties(gost_provider PROPERTIES PREFIX "" OUTPUT_NAME "gost_prov")
+set_target_properties(gost_provider PROPERTIES VERSION ${GOST_SOVERSION} SOVERSION ${GOST_SOVERSION})
+target_link_libraries(gost_provider gost_core ${OPENSSL_CRYPTO_LIBRARY})
+  =======
 # The GOST engine in module form
 add_library(gost_engine MODULE ${GOST_ENGINE_SOURCE_FILES})
   <<<<<<< magma_impl
@@ -367,6 +456,7 @@ set_target_properties(lib_gost_engine PROPERTIES
   OUTPUT_NAME "gost")
 target_link_libraries(lib_gost_engine PRIVATE gost_core ${OPENSSL_CRYPTO_LIBRARY})
 
+  >>>>>>> master
   >>>>>>> master
 
 set(GOST_SUM_SOURCE_FILES
@@ -412,9 +502,13 @@ install(TARGETS gostsum gost12sum RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES gostsum.1 gost12sum.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
   >>>>>>> master
 
+  <<<<<<< gost_provider
+install(TARGETS gost_provider gostsum gost12sum EXPORT GostEngineConfig
+  =======
 # install engine in library and module form
 install(TARGETS lib_gost_engine EXPORT GostEngineConfig LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(TARGETS gost_engine EXPORT GostEngineConfig
+  >>>>>>> master
         LIBRARY  DESTINATION ${OPENSSL_ENGINES_DIR}
         RUNTIME  DESTINATION ${OPENSSL_ENGINES_DIR})
 if (MSVC)
