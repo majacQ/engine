@@ -10,6 +10,7 @@
  *                                                                    *
  **********************************************************************/
 
+#include "compat.h"
 #include <openssl/evp.h>
 #include "gosthash2012.h"
 #include "gost_lcl.h"
@@ -29,6 +30,76 @@ static int gost_digest_ctrl_512(EVP_MD_CTX *ctx, int type, int arg,
 const char micalg_256[] = "gostr3411-2012-256";
 const char micalg_512[] = "gostr3411-2012-512";
 
+  <<<<<<< magma_impl
+static EVP_MD *_hidden_GostR3411_2012_256_md = NULL;
+static EVP_MD *_hidden_GostR3411_2012_512_md = NULL;
+
+EVP_MD *digest_gost2012_256(void)
+{
+    if (_hidden_GostR3411_2012_256_md == NULL) {
+        EVP_MD *md;
+
+        if ((md =
+             EVP_MD_meth_new(NID_id_GostR3411_2012_256, NID_undef)) == NULL
+#if (OPENSSL_VERSION_NUMBER <= 0x10002100L)
+	    || !EVP_MD_meth_set_flags(md, EVP_MD_FLAG_PKEY_METHOD_SIGNATURE)
+#endif
+            || !EVP_MD_meth_set_result_size(md, 32)
+            || !EVP_MD_meth_set_input_blocksize(md, 64)
+            || !EVP_MD_meth_set_app_datasize(md, sizeof(gost2012_hash_ctx))
+            || !EVP_MD_meth_set_init(md, gost_digest_init256)
+            || !EVP_MD_meth_set_update(md, gost_digest_update)
+            || !EVP_MD_meth_set_final(md, gost_digest_final)
+            || !EVP_MD_meth_set_copy(md, gost_digest_copy)
+            || !EVP_MD_meth_set_ctrl(md, gost_digest_ctrl_256)
+            || !EVP_MD_meth_set_cleanup(md, gost_digest_cleanup)) {
+            EVP_MD_meth_free(md);
+            md = NULL;
+        }
+        _hidden_GostR3411_2012_256_md = md;
+    }
+    return _hidden_GostR3411_2012_256_md;
+}
+
+void digest_gost2012_256_destroy(void)
+{
+    EVP_MD_meth_free(_hidden_GostR3411_2012_256_md);
+    _hidden_GostR3411_2012_256_md = NULL;
+}
+
+EVP_MD *digest_gost2012_512(void)
+{
+    if (_hidden_GostR3411_2012_512_md == NULL) {
+        EVP_MD *md;
+
+        if ((md =
+             EVP_MD_meth_new(NID_id_GostR3411_2012_512, NID_undef)) == NULL
+#if (OPENSSL_VERSION_NUMBER <= 0x10002100L)
+	    || !EVP_MD_meth_set_flags(md, EVP_MD_FLAG_PKEY_METHOD_SIGNATURE)
+#endif
+            || !EVP_MD_meth_set_result_size(md, 64)
+            || !EVP_MD_meth_set_input_blocksize(md, 64)
+            || !EVP_MD_meth_set_app_datasize(md, sizeof(gost2012_hash_ctx))
+            || !EVP_MD_meth_set_init(md, gost_digest_init512)
+            || !EVP_MD_meth_set_update(md, gost_digest_update)
+            || !EVP_MD_meth_set_final(md, gost_digest_final)
+            || !EVP_MD_meth_set_copy(md, gost_digest_copy)
+            || !EVP_MD_meth_set_ctrl(md, gost_digest_ctrl_512)
+            || !EVP_MD_meth_set_cleanup(md, gost_digest_cleanup)) {
+            EVP_MD_meth_free(md);
+            md = NULL;
+        }
+        _hidden_GostR3411_2012_512_md = md;
+    }
+    return _hidden_GostR3411_2012_512_md;
+}
+
+void digest_gost2012_512_destroy(void)
+{
+    EVP_MD_meth_free(_hidden_GostR3411_2012_512_md);
+    _hidden_GostR3411_2012_512_md = NULL;
+}
+  =======
 GOST_digest GostR3411_2012_template_digest = {
     .input_blocksize = 64,
     .app_datasize = sizeof(gost2012_hash_ctx),
@@ -55,6 +126,7 @@ GOST_digest GostR3411_2012_512_digest = {
     .init = gost_digest_init512,
     .ctrl = gost_digest_ctrl_512,
 };
+  >>>>>>> master
 
 static int gost_digest_init512(EVP_MD_CTX *ctx)
 {

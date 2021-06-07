@@ -1,9 +1,13 @@
 #!/usr/bin/perl
+  <<<<<<< magma_impl
+use Test::More tests => 15;
+  =======
   <<<<<<< openssl_1_1_0_release1
 use Test::More tests => 15;
   =======
 use Test2::V0;
 plan(2);
+  >>>>>>> master
   >>>>>>> master
 use Cwd 'abs_path';
 
@@ -11,15 +15,27 @@ use Cwd 'abs_path';
 # If this variable is set, engine would be loaded via configuration
 # file. Otherwise - via command line
 # 
+  <<<<<<< magma_impl
+$use_config = 1;
+  =======
   <<<<<<< openssl_1_1_0_release1
 $use_config = 1;
   =======
 my $use_config = 1;
   >>>>>>> master
+  >>>>>>> master
 
 # prepare data for 
 
 
+  <<<<<<< magma_impl
+# Set OPENSSL_ENGINES environment variable to just built engine
+if(!defined $ENV{'OPENSSL_ENGINES'}){
+        $ENV{'OPENSSL_ENGINES'} = abs_path("../.libs");
+}
+
+$engine=$ENV{'ENGINE_NAME'}||"gost";
+  =======
   <<<<<<< openssl_1_1_0_release1
 # Set OPENSSL_ENGINES environment variable to just built engine
 if(!defined $ENV{'OPENSSL_ENGINES'}){
@@ -30,17 +46,23 @@ $engine=$ENV{'ENGINE_NAME'}||"gost";
   =======
 my $engine=$ENV{'ENGINE_NAME'}||"gost";
   >>>>>>> master
+  >>>>>>> master
 
 # Reopen STDERR to eliminate extra output
 open STDERR, ">>","tests.err";
 
+  <<<<<<< magma_impl
+  =======
   <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 
 open F,">","test.cnf";
 if (defined($use_config) && $use_config) {
 	$eng_param = "";
 	open F,">","test.cnf";
 	print F <<EOCFG;
+  <<<<<<< magma_impl
+  =======
   =======
 my $F;
 my $eng_param;
@@ -50,6 +72,7 @@ if (defined($use_config) && $use_config) {
     $eng_param = "";
     open $F,">","test.cnf";
     print $F <<EOCFG;
+  >>>>>>> master
   >>>>>>> master
 openssl_conf = openssl_def
 [openssl_def]
@@ -61,7 +84,10 @@ default_algorithms = ALL
 
 EOCFG
 } else {
+  <<<<<<< magma_impl
+  =======
   <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 	$eng_param = "-engine $engine"
 }
 close F;
@@ -69,6 +95,8 @@ $ENV{'OPENSSL_CONF'}=abs_path('test.cnf');
 
 
 @keys=(['gost2001','A',"-----BEGIN PRIVATE KEY-----
+  <<<<<<< magma_impl
+  =======
   =======
     $eng_param = "-engine $engine"
 }
@@ -78,6 +106,7 @@ $ENV{'OPENSSL_CONF'}=abs_path('test.cnf');
 subtest 'keys' => sub {
     plan(15);
     my @keys=(['gost2001','A',"-----BEGIN PRIVATE KEY-----
+  >>>>>>> master
   >>>>>>> master
 MEUCAQAwHAYGKoUDAgITMBIGByqFAwICIwEGByqFAwICHgEEIgIgRhUDJ1WQASIf
 nx+aUM2eagzV9dCt6mQ5wdtenr2ZS/Y=
@@ -154,7 +183,10 @@ ENjS+gA=
 -----END PUBLIC KEY-----
 ']
 );
+  <<<<<<< magma_impl
+  =======
   <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 for $keyinfo (@keys) {
 	my ($alg,$paramset,$seckey,$sectext,$pubtext,$pubkey) = @$keyinfo;
 	open F,">",'tmp.pem';
@@ -175,6 +207,8 @@ for $keyinfo (@keys) {
 
 }
 unlink "tmp.pem";
+  <<<<<<< magma_impl
+  =======
   =======
     for my $keyinfo (@keys) {
         my ($alg,$paramset,$seckey,$sectext,$pubtext,$pubkey) = @$keyinfo;
@@ -198,6 +232,7 @@ unlink "tmp.pem";
 };
 
   >>>>>>> master
+  >>>>>>> master
 #4. Сгенерировать ключ два раза (для всех алгоритов и параметров).
 # Проверить что получились числа требуемой длины и они не совпадают
 
@@ -213,6 +248,8 @@ unlink "tmp.pem";
 # убедитсья, что подпись перестала быть корректной.
 
 # 9. Выработать shared ключ по vko
+  <<<<<<< magma_impl
+  =======
   <<<<<<< openssl_1_1_0_release1
   =======
 #    Generate a shared key by vko
@@ -394,6 +431,7 @@ MIGgMBcGCCqFAwcBAQECMAsGCSqFAwcBAgECAwOBhAAEgYCPdAER26Ym73DSUXBamTLJcntdV3oZ7RRx
     unlink "malice.pub";
     unlink "secret_m.bin";
 };
+  >>>>>>> master
   >>>>>>> master
 
 # 10. Разобрать стандартый encrypted key

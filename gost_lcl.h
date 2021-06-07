@@ -10,6 +10,7 @@
  *         OpenSSL 0.9.9 libraries required to compile and use        *
  *                              this code                             *
  **********************************************************************/
+# include "compat.h"
 # include <openssl/bn.h>
 # include <openssl/evp.h>
 # include <openssl/asn1t.h>
@@ -201,6 +202,28 @@ struct ossl_gost_digest_ctx {
     gost_hash_ctx dctx;
     gost_ctx cctx;
 };
+  <<<<<<< magma_impl
+/* EVP_MD structure for GOST R 34.11 */
+EVP_MD *digest_gost(void);
+void digest_gost_destroy(void);
+/* EVP MD structure for GOST R 34.11-2012 algorithms */
+EVP_MD *digest_gost2012_256(void);
+EVP_MD *digest_gost2012_512(void);
+void digest_gost2012_256_destroy(void);
+void digest_gost2012_512_destroy(void);
+/* EVP_MD structure for GOST 28147 in MAC mode */
+EVP_MD *imit_gost_cpa(void);
+void imit_gost_cpa_destroy(void);
+EVP_MD *imit_gost_cp_12(void);
+void imit_gost_cp_12_destroy(void);
+EVP_MD *magma_omac(void);
+void magma_omac_destroy(void);
+EVP_MD *grasshopper_omac(void);
+EVP_MD *grasshopper_omac_acpkm(void);
+void grasshopper_omac_destroy(void);
+void grasshopper_omac_acpkm_destroy(void);
+  =======
+  >>>>>>> master
 /* Cipher context used for EVP_CIPHER operation */
 struct ossl_gost_cipher_ctx {
     int paramNID;

@@ -25,6 +25,17 @@ enum GRASSHOPPER_CIPHER_TYPE {
     GRASSHOPPER_CIPHER_CFB,
     GRASSHOPPER_CIPHER_CTR,
     GRASSHOPPER_CIPHER_CTRACPKM,
+  <<<<<<< magma_impl
+};
+
+static EVP_CIPHER* gost_grasshopper_ciphers[6] = {
+        [GRASSHOPPER_CIPHER_ECB] = NULL,
+        [GRASSHOPPER_CIPHER_CBC] = NULL,
+        [GRASSHOPPER_CIPHER_OFB] = NULL,
+        [GRASSHOPPER_CIPHER_CFB] = NULL,
+        [GRASSHOPPER_CIPHER_CTR] = NULL,
+        [GRASSHOPPER_CIPHER_CTRACPKM] = NULL,
+  =======
     GRASSHOPPER_CIPHER_CTRACPKMOMAC,
 };
 
@@ -56,6 +67,7 @@ GOST_cipher grasshopper_cbc_cipher = {
         EVP_CIPH_CUSTOM_IV,
     .init = gost_grasshopper_cipher_init_cbc,
     .do_cipher = gost_grasshopper_cipher_do_cbc,
+  >>>>>>> master
 };
 
 GOST_cipher grasshopper_ofb_cipher = {
@@ -70,6 +82,9 @@ GOST_cipher grasshopper_ofb_cipher = {
     .do_cipher = gost_grasshopper_cipher_do_ofb,
 };
 
+  <<<<<<< magma_impl
+static struct GRASSHOPPER_CIPHER_PARAMS gost_cipher_params[6] = {
+  =======
 GOST_cipher grasshopper_cfb_cipher = {
     .nid = NID_grasshopper_cfb,
     .template = &grasshopper_template_cipher,
@@ -84,6 +99,7 @@ GOST_cipher grasshopper_cfb_cipher = {
 
   <<<<<<< openssl_1_1_0_release1
 static struct GRASSHOPPER_CIPHER_PARAMS gost_cipher_params[5] = {
+  >>>>>>> master
         [GRASSHOPPER_CIPHER_ECB] = {
                 NID_grasshopper_ecb,
                 gost_grasshopper_cipher_init_ecb,
@@ -135,6 +151,19 @@ static struct GRASSHOPPER_CIPHER_PARAMS gost_cipher_params[5] = {
 		 * user to assign correct values (IV || 0), and to make naive context
 		 * copy possible (for software such as openssh) */
                 16,
+  <<<<<<< magma_impl
+                false
+        },
+        [GRASSHOPPER_CIPHER_CTRACPKM] = {
+                NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm,
+                gost_grasshopper_cipher_init_ctracpkm,
+                gost_grasshopper_cipher_do_ctracpkm,
+                gost_grasshopper_cipher_destroy_ctr,
+                1,
+                sizeof(gost_grasshopper_cipher_ctx_ctr),
+                16,
+  =======
+  >>>>>>> master
                 false
         },
   =======
@@ -152,6 +181,8 @@ GOST_cipher grasshopper_ctr_cipher = {
   >>>>>>> master
 };
 
+  <<<<<<< magma_impl
+  =======
 GOST_cipher grasshopper_ctr_acpkm_cipher = {
     .nid = NID_kuznyechik_ctr_acpkm,
     .template = &grasshopper_template_cipher,
@@ -181,6 +212,7 @@ GOST_cipher grasshopper_ctr_acpkm_omac_cipher = {
     .ctx_size = sizeof(gost_grasshopper_cipher_ctx_ctr),
 };
 
+  >>>>>>> master
 /* first 256 bit of D from draft-irtf-cfrg-re-keying-12 */
 static const unsigned char ACPKM_D_2018[] = {
     0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, /*  64 bit */
@@ -189,7 +221,11 @@ static const unsigned char ACPKM_D_2018[] = {
     0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f, /* 256 bit */
 };
 
+  <<<<<<< magma_impl
+static void acpkm_next(gost_grasshopper_cipher_ctx *c)
+  =======
 static void acpkm_next(gost_grasshopper_cipher_ctx * c)
+  >>>>>>> master
 {
     unsigned char newkey[GRASSHOPPER_KEY_SIZE];
     const int J = GRASSHOPPER_KEY_SIZE / GRASSHOPPER_BLOCK_SIZE;
@@ -199,10 +235,16 @@ static void acpkm_next(gost_grasshopper_cipher_ctx * c)
         const unsigned char *D_n = &ACPKM_D_2018[n * GRASSHOPPER_BLOCK_SIZE];
 
         grasshopper_encrypt_block(&c->encrypt_round_keys,
+  <<<<<<< magma_impl
+            (grasshopper_w128_t *)D_n,
+            (grasshopper_w128_t *)&newkey[n * GRASSHOPPER_BLOCK_SIZE],
+            &c->buffer);
+  =======
                                   (grasshopper_w128_t *) D_n,
                                   (grasshopper_w128_t *) & newkey[n *
                                                                   GRASSHOPPER_BLOCK_SIZE],
                                   &c->buffer);
+  >>>>>>> master
     }
     gost_grasshopper_cipher_key(c, newkey);
 }
@@ -352,18 +394,36 @@ gost_grasshopper_cipher_init_ctr(EVP_CIPHER_CTX *ctx, const unsigned char
     return gost_grasshopper_cipher_init(ctx, key, iv, enc);
 }
 
+  <<<<<<< magma_impl
+GRASSHOPPER_INLINE int gost_grasshopper_cipher_init_ctracpkm(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+                                                               const unsigned char *iv,
+                                                               int enc) {
+  =======
 static GRASSHOPPER_INLINE int
 gost_grasshopper_cipher_init_ctracpkm(EVP_CIPHER_CTX
                                       *ctx, const unsigned
                                       char *key, const unsigned
                                       char *iv, int enc)
 {
+  >>>>>>> master
     gost_grasshopper_cipher_ctx_ctr *c = EVP_CIPHER_CTX_get_cipher_data(ctx);
 
     /* NB: setting type makes EVP do_cipher callback useless */
     c->c.type = GRASSHOPPER_CIPHER_CTRACPKM;
     EVP_CIPHER_CTX_set_num(ctx, 0);
+  <<<<<<< magma_impl
+    c->section_size  = 4096;
+
+    return gost_grasshopper_cipher_init(ctx, key, iv, enc);
+}
+
+GRASSHOPPER_INLINE int gost_grasshopper_cipher_do(EVP_CIPHER_CTX* ctx, unsigned char* out,
+                                                         const unsigned char* in, size_t inl) {
+    gost_grasshopper_cipher_ctx* c = (gost_grasshopper_cipher_ctx*) EVP_CIPHER_CTX_get_cipher_data(ctx);
+    struct GRASSHOPPER_CIPHER_PARAMS* params = &gost_cipher_params[c->type];
+  =======
     c->section_size = 4096;
+  >>>>>>> master
 
   >>>>>>> master
     return gost_grasshopper_cipher_init(ctx, key, iv, enc);
@@ -556,6 +616,17 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
     EVP_CIPHER_CTX_set_num(ctx, n);
     size_t blocks = inl / GRASSHOPPER_BLOCK_SIZE;
 
+  <<<<<<< magma_impl
+    while (n && inl) {
+	*(current_out++) = *(current_in++) ^ c->partial_buffer.b[n];
+	--inl;
+	n = (n + 1) % GRASSHOPPER_BLOCK_SIZE;
+    }
+    EVP_CIPHER_CTX_set_num(ctx, n);
+    size_t blocks = inl / GRASSHOPPER_BLOCK_SIZE;
+
+  =======
+  >>>>>>> master
     grasshopper_w128_t* iv_buffer = (grasshopper_w128_t*) iv;
 
     // full parts
@@ -564,6 +635,8 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
         currentOutputBlock = (grasshopper_w128_t*) current_out;
         grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer, currentOutputBlock, &c->c.buffer);
         grasshopper_append128(currentOutputBlock, currentInputBlock);
+  <<<<<<< magma_impl
+  =======
   =======
     iv_buffer = (grasshopper_w128_t *) iv;
 
@@ -576,6 +649,7 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
         grasshopper_plus128(&tmp, &c->partial_buffer, currentInputBlock);
         grasshopper_copy128(currentOutputBlock, &tmp);
   >>>>>>> master
+  >>>>>>> master
         ctr128_inc(iv_buffer->b);
         current_in += GRASSHOPPER_BLOCK_SIZE;
         current_out += GRASSHOPPER_BLOCK_SIZE;
@@ -587,20 +661,27 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
         currentInputBlock = (grasshopper_w128_t*) current_in;
         currentOutputBlock = (grasshopper_w128_t*) current_out;
         grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer, &c->partial_buffer, &c->c.buffer);
+  <<<<<<< magma_impl
+  =======
   =======
         currentInputBlock = (grasshopper_w128_t *) current_in;
         currentOutputBlock = (grasshopper_w128_t *) current_out;
         grasshopper_encrypt_block(&c->c.encrypt_round_keys, iv_buffer,
                                   &c->partial_buffer, &c->c.buffer);
   >>>>>>> master
+  >>>>>>> master
         for (i = 0; i < lasted; i++) {
             currentOutputBlock->b[i] =
                 c->partial_buffer.b[i] ^ currentInputBlock->b[i];
         }
+  <<<<<<< magma_impl
+	EVP_CIPHER_CTX_set_num(ctx, i);
+  =======
   <<<<<<< openssl_1_1_0_release1
 	EVP_CIPHER_CTX_set_num(ctx, i);
   =======
         EVP_CIPHER_CTX_set_num(ctx, i);
+  >>>>>>> master
   >>>>>>> master
         ctr128_inc(iv_buffer->b);
     }
@@ -609,16 +690,70 @@ static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX *ctx, unsigned char *ou
 }
 
 #define GRASSHOPPER_BLOCK_MASK (GRASSHOPPER_BLOCK_SIZE - 1)
+  <<<<<<< magma_impl
+static inline void apply_acpkm_grasshopper(gost_grasshopper_cipher_ctx_ctr *ctx, unsigned int *num)
+{
+    if (!ctx->section_size ||
+        (*num < ctx->section_size))
+  =======
 static inline void apply_acpkm_grasshopper(gost_grasshopper_cipher_ctx_ctr *
                                            ctx, unsigned int *num)
 {
     if (!ctx->section_size || (*num < ctx->section_size))
+  >>>>>>> master
         return;
     acpkm_next(&ctx->c);
     *num &= GRASSHOPPER_BLOCK_MASK;
 }
 
+  <<<<<<< magma_impl
+/* If meshing is not configured via ctrl (setting section_size)
+ * this function works exactly like plain ctr */
+int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX *ctx, unsigned char *out,
+    const unsigned char *in, size_t inl) {
+    gost_grasshopper_cipher_ctx_ctr *c = EVP_CIPHER_CTX_get_cipher_data(ctx);
+    unsigned char *iv = EVP_CIPHER_CTX_iv_noconst(ctx);
+    unsigned int num = EVP_CIPHER_CTX_num(ctx);
+
+    while ((num & GRASSHOPPER_BLOCK_MASK) && inl) {
+        *out++ = *in++ ^ c->partial_buffer.b[num & GRASSHOPPER_BLOCK_MASK];
+        --inl;
+        num++;
+    }
+    size_t blocks = inl / GRASSHOPPER_BLOCK_SIZE;
+    size_t i;
+
+    // full parts
+    for (i = 0; i < blocks; i++) {
+        apply_acpkm_grasshopper(c, &num);
+        grasshopper_encrypt_block(&c->c.encrypt_round_keys,
+            (grasshopper_w128_t *)iv, (grasshopper_w128_t *)out, &c->c.buffer);
+        grasshopper_append128((grasshopper_w128_t *)out, (grasshopper_w128_t *)in);
+        ctr128_inc(iv);
+        in  += GRASSHOPPER_BLOCK_SIZE;
+        out += GRASSHOPPER_BLOCK_SIZE;
+        num += GRASSHOPPER_BLOCK_SIZE;
+    }
+
+    // last part
+    size_t lasted = inl - blocks * GRASSHOPPER_BLOCK_SIZE;
+    if (lasted > 0) {
+        apply_acpkm_grasshopper(c, &num);
+        grasshopper_encrypt_block(&c->c.encrypt_round_keys,
+            (grasshopper_w128_t *)iv, &c->partial_buffer, &c->c.buffer);
+        for (i = 0; i < lasted; i++)
+            out[i] = c->partial_buffer.b[i] ^ in[i];
+        ctr128_inc(iv);
+        num += lasted;
+    }
+    EVP_CIPHER_CTX_set_num(ctx, num);
+
+    return 1;
+}
+
+  =======
   <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 /*
  * Fixed 128-bit IV implementation make shift regiser redundant.
  */
@@ -627,6 +762,8 @@ static void gost_grasshopper_cnt_next(gost_grasshopper_cipher_ctx_ofb* ctx, gras
     memcpy(&ctx->buffer1, iv, 16);
     grasshopper_encrypt_block(&ctx->c.encrypt_round_keys, &ctx->buffer1, buf, &ctx->c.buffer);
     memcpy(iv, buf, 16);
+  <<<<<<< magma_impl
+  =======
   =======
 /* If meshing is not configured via ctrl (setting section_size)
  * this function works exactly like plain ctr */
@@ -679,6 +816,7 @@ static int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX *ctx,
     EVP_CIPHER_CTX_set_num(ctx, num);
 
     return inl;
+  >>>>>>> master
   >>>>>>> master
 }
 
@@ -937,6 +1075,12 @@ static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX *ctx, int type, int arg, v
             }
             break;
         }
+  <<<<<<< magma_impl
+        case EVP_CTRL_KEY_MESH: {
+            gost_grasshopper_cipher_ctx_ctr *c = EVP_CIPHER_CTX_get_cipher_data(ctx);
+            if (c->c.type != GRASSHOPPER_CIPHER_CTRACPKM ||
+                !arg || (arg % GRASSHOPPER_BLOCK_SIZE))
+  =======
     case EVP_CTRL_KEY_MESH:{
             gost_grasshopper_cipher_ctx_ctr *c =
                 EVP_CIPHER_CTX_get_cipher_data(ctx);
@@ -944,10 +1088,47 @@ static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX *ctx, int type, int arg, v
                 c->c.type != GRASSHOPPER_CIPHER_CTRACPKMOMAC)
                 || (arg == 0)
                || (arg % GRASSHOPPER_BLOCK_SIZE))
+  >>>>>>> master
                 return -1;
             c->section_size = arg;
             break;
         }
+  <<<<<<< magma_impl
+        default:
+            GOSTerr(GOST_F_GOST_GRASSHOPPER_CIPHER_CTL, GOST_R_UNSUPPORTED_CIPHER_CTL_COMMAND);
+            return -1;
+    }
+    return 1;
+}
+
+GRASSHOPPER_INLINE EVP_CIPHER* cipher_gost_grasshopper_create(int cipher_type, int block_size) {
+    return EVP_CIPHER_meth_new(cipher_type,
+                               block_size  /* block_size */,
+                               GRASSHOPPER_KEY_SIZE /* key_size */);
+}
+
+const int cipher_gost_grasshopper_setup(EVP_CIPHER* cipher, uint8_t mode, int iv_size, bool padding) {
+    return EVP_CIPHER_meth_set_iv_length(cipher, iv_size) &&
+           EVP_CIPHER_meth_set_flags(cipher, (unsigned long) (
+                   mode |
+                   ((!padding) ? EVP_CIPH_NO_PADDING : 0) |
+                   ((iv_size > 0) ? EVP_CIPH_CUSTOM_IV : 0) |
+                   EVP_CIPH_RAND_KEY |
+                   EVP_CIPH_ALWAYS_CALL_INIT)
+           ) &&
+           EVP_CIPHER_meth_set_cleanup(cipher, gost_grasshopper_cipher_cleanup) &&
+           EVP_CIPHER_meth_set_set_asn1_params(cipher, gost_grasshopper_set_asn1_parameters) &&
+           EVP_CIPHER_meth_set_get_asn1_params(cipher, gost_grasshopper_get_asn1_parameters) &&
+           EVP_CIPHER_meth_set_ctrl(cipher, gost_grasshopper_cipher_ctl) &&
+           EVP_CIPHER_meth_set_do_cipher(cipher, gost_grasshopper_cipher_do);
+}
+
+const GRASSHOPPER_INLINE EVP_CIPHER* cipher_gost_grasshopper(uint8_t mode, uint8_t num) {
+    EVP_CIPHER** cipher;
+    struct GRASSHOPPER_CIPHER_PARAMS* params;
+
+    cipher = &gost_grasshopper_ciphers[num];
+  =======
     case EVP_CTRL_TLSTREE:
         {
           unsigned char newkey[32];
@@ -992,6 +1173,7 @@ static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX *ctx, int type, int arg, v
             }
             EVP_CIPHER_CTX_set_num(ctx, 0);
             memcpy(EVP_CIPHER_CTX_iv_noconst(ctx), adjusted_iv, 16);
+  >>>>>>> master
 
             gost_grasshopper_cipher_key(c, newkey);
             return 1;
@@ -1074,6 +1256,30 @@ void cipher_gost_grasshopper_destroy(void)
     EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR]);
     gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR] = NULL;
 }
+  <<<<<<< magma_impl
+
+const GRASSHOPPER_INLINE EVP_CIPHER* cipher_gost_grasshopper_ctracpkm() {
+    return cipher_gost_grasshopper(EVP_CIPH_CTR_MODE, GRASSHOPPER_CIPHER_CTRACPKM);
+}
+
+void cipher_gost_grasshopper_destroy(void)
+{
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_ECB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_ECB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CBC]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CBC] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_OFB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_OFB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CFB]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CFB] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTR] = NULL;
+    EVP_CIPHER_meth_free(gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTRACPKM]);
+    gost_grasshopper_ciphers[GRASSHOPPER_CIPHER_CTRACPKM] = NULL;
+}
+
+  =======
+  >>>>>>> master
 #if defined(__cplusplus)
   =======
 /* Called directly by CMAC_ACPKM_Init() */

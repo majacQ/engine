@@ -17,6 +17,9 @@ include(CheckCSourceRuns)
 
 enable_testing()
 
+  <<<<<<< magma_impl
+find_package(OpenSSL 1.0.2 REQUIRED)
+  =======
 find_package(OpenSSL 3.0 REQUIRED)
 
 if (NOT DEFINED OPENSSL_ROOT_DIR)
@@ -26,6 +29,7 @@ endif()
 find_program(OPENSSL_PROGRAM openssl
   PATHS ${OPENSSL_ROOT_DIR} PATH_SUFFIXES apps bin NO_DEFAULT_PATH)
 message(STATUS "Found OpenSSL application: ${OPENSSL_PROGRAM}")
+  >>>>>>> master
 include_directories(${OPENSSL_INCLUDE_DIR})
   >>>>>>> master
 
@@ -175,6 +179,7 @@ set(GOST_CORE_SOURCE_FILES
         gost_omac_acpkm.c
         gost_gost2015.c
         gost_lcl.h
+        compat.h
         gost_params.c
         gost_keyexpimp.c
         )
@@ -208,6 +213,15 @@ set(GOST_LIB_SOURCE_FILES
         )
 
 set(GOST_ENGINE_SOURCE_FILES
+  <<<<<<< magma_impl
+        ${GOST_CORE_SOURCE_FILES}
+        gost_ameth.c
+        gost_md.c
+        gost_md2012.c
+        gost_pmeth.c
+        gost_omac.c
+        gost_omac_acpkm.c
+  =======
         gost_eng.c
         )
 
@@ -317,14 +331,28 @@ set(BINARY_TESTS_TARGETS
         test_keyexpimp
         test_gost89
 	test_tls
+  >>>>>>> master
         )
 set_property(TARGET ${BINARY_TESTS_TARGETS} APPEND PROPERTY COMPILE_DEFINITIONS ENGINE_DIR="${OUTPUT_DIRECTORY}")
+
+add_executable(test_grasshopper test_grasshopper.c)
+target_link_libraries(test_grasshopper gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+add_test(NAME grasshopper
+	COMMAND test_grasshopper)
+
+add_test(NAME engine
+	 COMMAND perl run_tests
+	 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test)
 
 add_library(gost_core STATIC ${GOST_LIB_SOURCE_FILES})
 set_target_properties(gost_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # The GOST engine in module form
 add_library(gost_engine MODULE ${GOST_ENGINE_SOURCE_FILES})
+  <<<<<<< magma_impl
+set_target_properties(gost_engine PROPERTIES PREFIX "" OUTPUT_NAME "libgost")
+target_link_libraries(gost_engine gost_core ${OPENSSL_CRYPTO_LIBRARY})
+  =======
 # Set the suffix explicitly to adapt to OpenSSL's idea of what a
 # module suffix should be
 set_target_properties(gost_engine PROPERTIES
@@ -339,6 +367,7 @@ set_target_properties(lib_gost_engine PROPERTIES
   OUTPUT_NAME "gost")
 target_link_libraries(lib_gost_engine PRIVATE gost_core ${OPENSSL_CRYPTO_LIBRARY})
 
+  >>>>>>> master
 
 set(GOST_SUM_SOURCE_FILES
         gostsum.c
@@ -359,6 +388,13 @@ add_custom_target(tags
     COMMAND ctags -R . ${OPENSSL_ROOT_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+  <<<<<<< magma_impl
+# install
+if (NOT OPENSSL_ENGINES_INSTALL_DIR)
+ set(OPENSSL_ENGINES_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/engines-${OPENSSL_VERSION_MAJOR}_${OPENSSL_VERSION_MINOR})
+endif()
+set(OPENSSL_MAN_INSTALL_DIR ${CMAKE_INSTALL_MANDIR}/man1)
+  =======
 add_custom_target(tcl_tests
     COMMAND OPENSSL_LIBCRYPTO=${OPENSSL_CRYPTO_LIBRARY}
             OPENSSL_APP=${OPENSSL_PROGRAM}
@@ -374,6 +410,7 @@ target_link_libraries(test_tlstree PUBLIC ${OPENSSL_CRYPTO_LIBRARY})
 # install programs and manuals
 install(TARGETS gostsum gost12sum RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES gostsum.1 gost12sum.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+  >>>>>>> master
 
 # install engine in library and module form
 install(TARGETS lib_gost_engine EXPORT GostEngineConfig LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

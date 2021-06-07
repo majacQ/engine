@@ -21,6 +21,13 @@
 
 #define PK_WRAP_PARAM "LEGACY_PK_WRAP"
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+/* some functions have const'ed arguments since openssl-1.1.0 */
+# define OPENSSL110_const const
+#else
+# define OPENSSL110_const
+#endif
+
 /*
  * Pack bignum into byte buffer of given size, filling all leading bytes by
  * zeros
@@ -147,10 +154,14 @@ static int gost_decode_nid_params(EVP_PKEY *pkey, int pkey_nid, int param_nid)
  * Parses GOST algorithm parameters from X509_ALGOR and modifies pkey setting
  * NID and parameters
  */
+  <<<<<<< magma_impl
+static int decode_gost_algor_params(EVP_PKEY *pkey, OPENSSL110_const X509_ALGOR *palg)
+  =======
 static int decode_gost_algor_params(EVP_PKEY *pkey,
                                     const X509_ALGOR *palg)
+  >>>>>>> master
 {
-    const ASN1_OBJECT *palg_obj = NULL;
+    OPENSSL110_const ASN1_OBJECT *palg_obj = NULL;
     int ptype = V_ASN1_UNDEF;
     int pkey_nid = NID_undef, param_nid = NID_undef;
     ASN1_STRING *pval = NULL;
@@ -159,7 +170,7 @@ static int decode_gost_algor_params(EVP_PKEY *pkey,
 
     if (!pkey || !palg)
         return 0;
-    X509_ALGOR_get0(&palg_obj, &ptype, (const void **)&pval, palg);
+    X509_ALGOR_get0(&palg_obj, &ptype, (OPENSSL110_const void **)&pval, palg);
     if (ptype != V_ASN1_SEQUENCE) {
         GOSTerr(GOST_F_DECODE_GOST_ALGOR_PARAMS,
                 GOST_R_BAD_KEY_PARAMETERS_FORMAT);
@@ -585,15 +596,19 @@ static BIGNUM *unmask_priv_key(EVP_PKEY *pk,
     return pknum_masked;
 }
 
+  <<<<<<< magma_impl
+static int priv_decode_gost(EVP_PKEY *pk, OPENSSL110_const PKCS8_PRIV_KEY_INFO *p8inf)
+  =======
 static int priv_decode_gost(EVP_PKEY *pk,
                             const PKCS8_PRIV_KEY_INFO *p8inf)
+  >>>>>>> master
 {
     const unsigned char *pkey_buf = NULL, *p = NULL;
     int priv_len = 0;
     BIGNUM *pk_num = NULL;
     int ret = 0;
-    const X509_ALGOR *palg = NULL;
-    const ASN1_OBJECT *palg_obj = NULL;
+    OPENSSL110_const X509_ALGOR *palg = NULL;
+    OPENSSL110_const ASN1_OBJECT *palg_obj = NULL;
     ASN1_INTEGER *priv_key = NULL;
     int expected_key_len;
 

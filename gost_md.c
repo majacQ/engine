@@ -49,6 +49,26 @@ EVP_MD *GOST_init_digest(GOST_digest *d)
     if (d->digest)
         return d->digest;
 
+  <<<<<<< magma_impl
+        if ((md = EVP_MD_meth_new(NID_id_GostR3411_94, NID_undef)) == NULL
+#if (OPENSSL_VERSION_NUMBER <= 0x10002100L)
+	    || !EVP_MD_meth_set_flags(md, EVP_MD_FLAG_PKEY_METHOD_SIGNATURE)
+#endif
+            || !EVP_MD_meth_set_result_size(md, 32)
+            || !EVP_MD_meth_set_input_blocksize(md, 32)
+            || !EVP_MD_meth_set_app_datasize(md,
+                                             sizeof(struct
+                                                    ossl_gost_digest_ctx))
+            || !EVP_MD_meth_set_init(md, gost_digest_init)
+            || !EVP_MD_meth_set_update(md, gost_digest_update)
+            || !EVP_MD_meth_set_final(md, gost_digest_final)
+            || !EVP_MD_meth_set_copy(md, gost_digest_copy)
+            || !EVP_MD_meth_set_cleanup(md, gost_digest_cleanup)) {
+            EVP_MD_meth_free(md);
+            md = NULL;
+        }
+        _hidden_GostR3411_94_md = md;
+  =======
     EVP_MD *md;
     if (!(md = EVP_MD_meth_new(d->nid, NID_undef))
         || !EVP_MD_meth_set_result_size(md, TPL(d, result_size))
@@ -63,6 +83,7 @@ EVP_MD *GOST_init_digest(GOST_digest *d)
         || !EVP_MD_meth_set_ctrl(md, TPL(d, ctrl))) {
         EVP_MD_meth_free(md);
         md = NULL;
+  >>>>>>> master
     }
     if (md && d->alias)
         EVP_add_digest_alias(EVP_MD_name(md), d->alias);

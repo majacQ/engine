@@ -33,6 +33,11 @@ typedef struct {
 
 typedef struct {
     gost_grasshopper_cipher_ctx c;
+  <<<<<<< magma_impl
+    grasshopper_w128_t partial_buffer;
+    unsigned int section_size;  /* After how much bytes mesh the key,
+				   if 0 never mesh and work like plain ctr. */
+  =======
   =======
   >>>>>>> master
     grasshopper_w128_t partial_buffer;
@@ -41,6 +46,7 @@ typedef struct {
     unsigned char kdf_seed[8];
 		unsigned char tag[16];
 		EVP_MD_CTX *omac_ctx;
+  >>>>>>> master
 } gost_grasshopper_cipher_ctx_ctr;
 
 static void gost_grasshopper_cipher_key(gost_grasshopper_cipher_ctx* c, const uint8_t* k);
@@ -71,8 +77,15 @@ static int gost_grasshopper_cipher_init_ctracpkm_omac(EVP_CIPHER_CTX* ctx,
 static int gost_grasshopper_cipher_init(EVP_CIPHER_CTX* ctx, const unsigned char* key,
     const unsigned char* iv, int enc);
 
+  <<<<<<< magma_impl
+int gost_grasshopper_cipher_init_ctracpkm(EVP_CIPHER_CTX* ctx, const unsigned char* key, const unsigned char* iv, int enc);
+
+int gost_grasshopper_cipher_init(EVP_CIPHER_CTX* ctx, const unsigned char* key,
+                                 const unsigned char* iv, int enc);
+  =======
 static int gost_grasshopper_cipher_do(EVP_CIPHER_CTX* ctx, unsigned char* out,
     const unsigned char* in, size_t inl);
+  >>>>>>> master
 
 static int gost_grasshopper_cipher_do_ecb(EVP_CIPHER_CTX* ctx, unsigned char* out,
     const unsigned char* in, size_t inl);
@@ -89,8 +102,15 @@ static int gost_grasshopper_cipher_do_cfb(EVP_CIPHER_CTX* ctx, unsigned char* ou
 static int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX* ctx, unsigned char* out,
     const unsigned char* in, size_t inl);
 
+  <<<<<<< magma_impl
+int gost_grasshopper_cipher_do_ctr(EVP_CIPHER_CTX* ctx, unsigned char* out,
+                                   const unsigned char* in, size_t inl);
+int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX* ctx, unsigned char* out,
+                                   const unsigned char* in, size_t inl);
+  =======
 static int gost_grasshopper_cipher_do_ctracpkm(EVP_CIPHER_CTX* ctx, unsigned char* out,
     const unsigned char* in, size_t inl);
+  >>>>>>> master
 
 static int gost_grasshopper_cipher_do_ctracpkm_omac(EVP_CIPHER_CTX* ctx, unsigned char* out,
     const unsigned char* in, size_t inl);
@@ -103,7 +123,22 @@ static int gost_grasshopper_get_asn1_parameters(EVP_CIPHER_CTX* ctx, ASN1_TYPE* 
 
 static int gost_grasshopper_cipher_ctl(EVP_CIPHER_CTX* ctx, int type, int arg, void* ptr);
 
+  <<<<<<< magma_impl
+const int cipher_gost_grasshopper_setup(EVP_CIPHER* cipher, uint8_t mode, int iv_size, bool padding);
+
+const EVP_CIPHER* cipher_gost_grasshopper(uint8_t mode, uint8_t num);
+
+extern const EVP_CIPHER* cipher_gost_grasshopper_ecb();
+extern const EVP_CIPHER* cipher_gost_grasshopper_cbc();
+extern const EVP_CIPHER* cipher_gost_grasshopper_ofb();
+extern const EVP_CIPHER* cipher_gost_grasshopper_cfb();
+extern const EVP_CIPHER* cipher_gost_grasshopper_ctr();
+extern const EVP_CIPHER* cipher_gost_grasshopper_ctracpkm();
+
+void cipher_gost_grasshopper_destroy(void);
+  =======
 const EVP_CIPHER* cipher_gost_grasshopper_ctracpkm();
+  >>>>>>> master
 
 void cipher_gost_grasshopper_destroy(void);
 #if defined(__cplusplus)
