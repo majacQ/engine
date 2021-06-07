@@ -69,6 +69,11 @@ static int gost_cipher_nids[] = {
         NID_magma_cbc,
         NID_magma_ctr,
         NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm,
+#ifdef NID_kuznyechik_mgm
+				NID_kuznyechik_mgm,
+#else
+				NID_undef,
+#endif
         0
   =======
 static EVP_PKEY_METHOD* pmeth_GostR3410_2001 = NULL,
@@ -487,6 +492,9 @@ static int populate_gost_engine(ENGINE* e) {
         || !EVP_add_cipher(cipher_gost_grasshopper_ofb())
         || !EVP_add_cipher(cipher_gost_grasshopper_ctr())
         || !EVP_add_cipher(cipher_gost_grasshopper_ctracpkm())
+#ifdef NID_kuznyechik_mgm
+        || !EVP_add_cipher(cipher_gost_grasshopper_mgm())
+#endif				
         || !EVP_add_cipher(cipher_magma_cbc())
         || !EVP_add_cipher(cipher_magma_ctr())
         || !EVP_add_digest(digest_gost())
@@ -591,6 +599,10 @@ static int gost_digests(ENGINE* e, const EVP_MD** digest,
         *cipher = cipher_gost_grasshopper_ctr();
     } else if (nid == NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm) {
         *cipher = cipher_gost_grasshopper_ctracpkm();
+#ifdef NID_kuznyechik_mgm
+    } else if (nid == NID_kuznyechik_mgm) {
+        *cipher = cipher_gost_grasshopper_mgm();
+#endif
     } else if (nid == NID_magma_cbc) {
         *cipher = cipher_magma_cbc();
     } else if (nid == NID_magma_ctr) {
