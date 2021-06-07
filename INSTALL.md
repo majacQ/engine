@@ -6,9 +6,9 @@ How to Build
 
 To build and install OpenSSL GOST Engine, you will need
 
-* OpenSSL 1.1.1
+* OpenSSL 3.0 development version
 * an ANSI C compiler
-* CMake (3.0 or newer)
+* CMake (3.0 or newer, 3.18 recommended)
 
 Here is a quick build guide:
 
@@ -21,12 +21,16 @@ Instead of `Release` you can use `Debug`, `RelWithDebInfo` or `MinSizeRel` confi
 See [cmake docs](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html) for details.
 You will find built binaries in `../bin` directory.
 
-If you want to build against a specific OpenSSL instance (you will need it
-if you have more than one OpenSSL instance for example), you can use
-the `cmake` variable `OPENSSL_ROOT_DIR` to specify path of the desirable
-OpenSSL instance:
+If you want to build against a specific OpenSSL instance (you will need it if
+you have more than one OpenSSL instance for example), you can use the `cmake`
+variable `OPENSSL_ROOT_DIR` to specify absolute path of the desirable OpenSSL
+instance:
 
     $ cmake -DOPENSSL_ROOT_DIR=/PATH/TO/OPENSSL/ ..
+
+Building against OpenSSL 3.0 requires openssl detection module
+(FindOpenSSL.cmake) from CMake 3.18 or higher. More earlier versions may have
+problems with it.
 
 If you use Visual Studio, you can also set `CMAKE_INSTALL_PREFIX` variable
 to set install path, like this:
@@ -96,13 +100,12 @@ And section which describes configuration of the engine should contain
     engine_id = gost
     dynamic_path = /usr/lib/ssl/engines/libgost.so
     default_algorithms = ALL
-    CRYPT_PARAMS = id-Gost28147-89-CryptoPro-A-ParamSet
 
-BouncyCastle cryptoprovider has some problems with private key parsing from
-PrivateKeyInfo, so if you want to use old private key representation format,
-which supported by BC, you must add:
+Various cryptoproviders (e.g. BouncyCastle) has some problems with private key
+parsing from PrivateKeyInfo, so if you want to use old private key
+representation format, which supported by BC, you will have to add:
 
-    PK_PARAMS = LEGACY_PK_WRAP
+    GOST_PK_FORMAT = LEGACY_PK_WRAP
 
 to `[gost_section]`.
 
@@ -119,7 +122,8 @@ The `CRYPT_PARAMS` parameter is engine-specific. It allows the user to choose
 between different parameter sets of symmetric cipher algorithm. [RFC 4357][1]
 specifies several parameters for the GOST 28147-89 algorithm, but OpenSSL
 doesn't provide user interface to choose one when encrypting. So use engine
-configuration parameter instead.
+configuration parameter instead. It SHOULD NOT be used nowadays because all
+the parameters except the default one are deprecated now.
 
 Value of this parameter can be either short name, defined in OpenSSL
 `obj_dat.h` header file or numeric representation of OID, defined in

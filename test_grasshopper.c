@@ -33,7 +33,11 @@
 		 printf(cGREEN "Test passed\n" cNORM);}
 
 /* Test key from both GOST R 34.12-2015 and GOST R 34.13-2015. */
+  <<<<<<< magma_impl
 static const unsigned char K[32] = {
+  =======
+static const unsigned char K[] = {
+  >>>>>>> master
     0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff,0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
     0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10,0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
 };
@@ -46,6 +50,7 @@ static const unsigned char P[] = {
     0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xee,0xff,0x0a,0x00,
     0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xee,0xff,0x0a,0x00,0x11,
 };
+  <<<<<<< magma_impl
 /* Extended plaintext from tc26 acpkm Kuznyechik test vector */
 static const unsigned char P_acpkm[] = {
     0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x00,0xFF,0xEE,0xDD,0xCC,0xBB,0xAA,0x99,0x88,
@@ -69,6 +74,8 @@ static const unsigned char P_omac_acpkm2[] = {
     0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xEE,0xFF,0x0A,0x00,0x11,
     0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xEE,0xFF,0x0A,0x00,0x11,0x22,
 };
+  =======
+  >>>>>>> master
 static const unsigned char E_ecb[] = {
     /* ECB test vectors from GOST R 34.13-2015  A.1.1 */
     /* first 16 bytes is vector (b) from GOST R 34.12-2015 A.1 */
@@ -84,6 +91,7 @@ static const unsigned char E_ctr[] = {
     0xa5,0xea,0xe8,0x8b,0xe6,0x35,0x6e,0xd3,0xd5,0xe8,0x77,0xf1,0x35,0x64,0xa3,0xa5,
     0xcb,0x91,0xfa,0xb1,0xf2,0x0c,0xba,0xb6,0xd1,0xc6,0xd1,0x58,0x20,0xbd,0xba,0x73,
 };
+  <<<<<<< magma_impl
 static const unsigned char E_acpkm[] = {
     0xF1,0x95,0xD8,0xBE,0xC1,0x0E,0xD1,0xDB,0xD5,0x7B,0x5F,0xA2,0x40,0xBD,0xA1,0xB8,
     0x85,0xEE,0xE7,0x33,0xF6,0xA1,0x3E,0x5D,0xF3,0x3C,0xE4,0xB3,0x3C,0x45,0xDE,0xE4,
@@ -107,6 +115,8 @@ static const unsigned char E_acpkm_master[] = {
     0x14,0x2C,0x57,0x79,0x14,0xFE,0xA9,0x0D,0x3B,0xC2,0x50,0x2E,0x83,0x36,0x85,0xD9,
 };
 static const unsigned char P_acpkm_master[sizeof(E_acpkm_master)] = { 0 };
+  =======
+  >>>>>>> master
 /*
  * Other modes (ofb, cbc, cfb) is impossible to test to match GOST R
  * 34.13-2015 test vectors exactly, due to these vectors having exceeding
@@ -139,6 +149,7 @@ static const unsigned char E_cfb[] = {
     0xe1,0xc8,0x52,0xe9,0xa8,0x56,0x71,0x62,0xdb,0xb5,0xda,0x7f,0x66,0xde,0xa9,0x26,
 };
 
+  <<<<<<< magma_impl
 static const unsigned char iv_ctr[]	= { 0x12,0x34,0x56,0x78,0x90,0xab,0xce,0xf0,
 					    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
 /* Truncated to 128-bits IV from GOST examples. */
@@ -155,6 +166,12 @@ static const unsigned char MAC_omac_acpkm2[] = {
     0xFB,0xB8,0xDC,0xEE,0x45,0xBE,0xA6,0x7C,0x35,0xF5,0x8C,0x57,0x00,0x89,0x8E,0x5D,
 };
 
+  =======
+static const unsigned char iv_ctr[]	= { 0x12,0x34,0x56,0x78,0x90,0xab,0xce,0xf0, 0,0,0,0,0,0,0,0 };
+/* truncated to 128-bits IV */
+static const unsigned char iv_128bit[]	= { 0x12,0x34,0x56,0x78,0x90,0xab,0xce,0xf0,
+					    0xa1,0xb2,0xc3,0xd4,0xe5,0xf0,0x01,0x12 };
+  >>>>>>> master
 struct testcase {
     const char *name;
     const EVP_CIPHER *(*type)(void);
@@ -169,10 +186,13 @@ struct testcase {
 static struct testcase testcases[] = {
     { "ecb", cipher_gost_grasshopper_ecb, 0, P,  E_ecb,  sizeof(P),  NULL,       0, 0 },
     { "ctr", cipher_gost_grasshopper_ctr, 1, P,  E_ctr,  sizeof(P),  iv_ctr,     sizeof(iv_ctr), 0 },
+  <<<<<<< magma_impl
     { "ctr-no-acpkm", cipher_gost_grasshopper_ctracpkm, 1, P,   E_ctr,   sizeof(P),       iv_ctr, sizeof(iv_ctr), 0 },
     { "ctracpkm", cipher_gost_grasshopper_ctracpkm, 1, P_acpkm, E_acpkm, sizeof(P_acpkm), iv_ctr, sizeof(iv_ctr), 256 / 8 },
     { "acpkm-Master", cipher_gost_grasshopper_ctracpkm, 0, P_acpkm_master, E_acpkm_master, sizeof(P_acpkm_master),
 	iv_acpkm_m, sizeof(iv_acpkm_m), 768 / 8 },
+  =======
+  >>>>>>> master
     { "ofb", cipher_gost_grasshopper_ofb, 1, P,  E_ofb,  sizeof(P),  iv_128bit,  sizeof(iv_128bit), 0 },
     { "cbc", cipher_gost_grasshopper_cbc, 0, P,  E_cbc,  sizeof(P),  iv_128bit,  sizeof(iv_128bit), 0 },
     { "cfb", cipher_gost_grasshopper_cfb, 0, P,  E_cfb,  sizeof(P),  iv_128bit,  sizeof(iv_128bit), 0 },
@@ -196,20 +216,31 @@ static int test_block(const EVP_CIPHER *type, const char *name,
     const unsigned char *iv, size_t iv_size, int acpkm)
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+  <<<<<<< magma_impl
     const char *standard = acpkm? "R 23565.1.017-2018" : "GOST R 34.13-2015";
+  =======
+  >>>>>>> master
     unsigned char c[size];
     int outlen, tmplen;
     int ret = 0, test;
 
     OPENSSL_assert(ctx);
+  <<<<<<< magma_impl
     printf("Encryption test from %s [%s] \n", standard, name);
+  =======
+    printf("Encryption test from GOST R 34.13-2015 [%s] \n", name);
+  >>>>>>> master
     /* test with single big chunk */
     EVP_CIPHER_CTX_init(ctx);
     T(EVP_CipherInit_ex(ctx, type, NULL, K, iv, 1));
     T(EVP_CIPHER_CTX_set_padding(ctx, 0));
     memset(c, 0, sizeof(c));
     if (acpkm)
+  <<<<<<< magma_impl
 	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, acpkm, NULL));
+  =======
+	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, 256 / 8, NULL));
+  >>>>>>> master
     T(EVP_CipherUpdate(ctx, c, &outlen, pt, size));
     T(EVP_CipherFinal_ex(ctx, c + outlen, &tmplen));
     EVP_CIPHER_CTX_cleanup(ctx);
@@ -220,7 +251,11 @@ static int test_block(const EVP_CIPHER *type, const char *name,
     ret |= test;
 
     /* test with small chunks of block size */
+  <<<<<<< magma_impl
     printf("Chunked encryption test from %s [%s] \n", standard, name);
+  =======
+    printf("Chunked encryption test from GOST R 34.13-2015 [%s] \n", name);
+  >>>>>>> master
     int blocks = size / GRASSHOPPER_BLOCK_SIZE;
     int z;
     EVP_CIPHER_CTX_init(ctx);
@@ -228,7 +263,11 @@ static int test_block(const EVP_CIPHER *type, const char *name,
     T(EVP_CIPHER_CTX_set_padding(ctx, 0));
     memset(c, 0, sizeof(c));
     if (acpkm)
+  <<<<<<< magma_impl
 	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, acpkm, NULL));
+  =======
+	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, 256 / 8, NULL));
+  >>>>>>> master
     for (z = 0; z < blocks; z++) {
 	int offset = z * GRASSHOPPER_BLOCK_SIZE;
 	int sz = GRASSHOPPER_BLOCK_SIZE;
@@ -245,13 +284,21 @@ static int test_block(const EVP_CIPHER *type, const char *name,
     ret |= test;
 
     /* test with single big chunk */
+  <<<<<<< magma_impl
     printf("Decryption test from %s [%s] \n", standard, name);
+  =======
+    printf("Decryption test from GOST R 34.13-2015 [%s] \n", name);
+  >>>>>>> master
     EVP_CIPHER_CTX_init(ctx);
     T(EVP_CipherInit_ex(ctx, type, NULL, K, iv, 0));
     T(EVP_CIPHER_CTX_set_padding(ctx, 0));
     memset(c, 0, sizeof(c));
     if (acpkm)
+  <<<<<<< magma_impl
 	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, acpkm, NULL));
+  =======
+	T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, 256 / 8, NULL));
+  >>>>>>> master
     T(EVP_CipherUpdate(ctx, c, &outlen, exp, size));
     T(EVP_CipherFinal_ex(ctx, c + outlen, &tmplen));
     EVP_CIPHER_CTX_cleanup(ctx);
@@ -270,13 +317,20 @@ static int test_stream(const EVP_CIPHER *type, const char *name,
     const unsigned char *iv, size_t iv_size, int acpkm)
 {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+  <<<<<<< magma_impl
     const char *standard = acpkm? "R 23565.1.017-2018" : "GOST R 34.13-2015";
+  =======
+  >>>>>>> master
     int ret = 0, test;
     int z;
 
     OPENSSL_assert(ctx);
     /* Cycle through all lengths from 1 upto maximum size */
+  <<<<<<< magma_impl
     printf("Stream encryption test from %s [%s] \n", standard, name);
+  =======
+    printf("Stream encryption test from GOST R 34.13-2015 [%s] \n", name);
+  >>>>>>> master
     for (z = 1; z <= size; z++) {
 	unsigned char c[size];
 	int outlen, tmplen;
@@ -288,7 +342,11 @@ static int test_stream(const EVP_CIPHER *type, const char *name,
 	EVP_CIPHER_CTX_set_padding(ctx, 0);
 	memset(c, 0xff, sizeof(c));
 	if (acpkm)
+  <<<<<<< magma_impl
 	    T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, acpkm, NULL));
+  =======
+	    T(EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_KEY_MESH, 256 / 8, NULL));
+  >>>>>>> master
 	for (i = 0; i < size; i += z) {
 	    if (i + z > size)
 		sz = size - i;
@@ -312,6 +370,7 @@ static int test_stream(const EVP_CIPHER *type, const char *name,
     return ret;
 }
 
+  <<<<<<< magma_impl
 static int test_mac(const char *name, const char *from,
     const EVP_MD *type, int acpkm, int acpkm_t,
     const unsigned char *pt, size_t pt_size,
@@ -348,6 +407,8 @@ static int test_mac(const char *name, const char *from,
     return test;
 }
 
+  =======
+  >>>>>>> master
 int main(int argc, char **argv)
 {
     int ret = 0;
@@ -363,6 +424,7 @@ int main(int argc, char **argv)
 		t->iv, t->iv_size, t->acpkm);
     }
 
+  <<<<<<< magma_impl
     /* preload cbc cipher for omac set key */
     EVP_add_cipher(cipher_gost_grasshopper_cbc());
 
@@ -377,6 +439,8 @@ int main(int argc, char **argv)
         P_omac_acpkm2, sizeof(P_omac_acpkm2),
         MAC_omac_acpkm2, sizeof(MAC_omac_acpkm2));
 
+  =======
+  >>>>>>> master
     if (ret)
 	printf(cDRED "= Some tests FAILED!\n" cNORM);
     else

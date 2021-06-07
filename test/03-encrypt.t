@@ -1,11 +1,24 @@
 #!/usr/bin/perl
+  <<<<<<< magma_impl
 use Test::More tests => 48;
+  =======
+  <<<<<<< openssl_1_1_0_release1
+use Test::More tests => 48;
+  =======
+use Test2::V0;
+plan(48);
+  >>>>>>> master
+  >>>>>>> master
 use Cwd 'abs_path';
 
 #
 # If this variable is set, engine would be loaded via configuration
 # file. Otherwise - via command line
 # 
+  <<<<<<< magma_impl
+  =======
+  <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 $use_config = 1;
 
 # prepare data for 
@@ -13,15 +26,37 @@ $use_config = 1;
 
 # Set OPENSSL_ENGINES environment variable to just built engine
 if(!defined $ENV{'OPENSSL_ENGINES'}){
+  <<<<<<< magma_impl
         $ENV{'OPENSSL_ENGINES'} = abs_path("../.libs");
 }
 
 $key='0123456789abcdef' x 2;
+  =======
+        $ENV{'OPENSSL_ENGINES'} = abs_path("../bin");
+}
+
+$key='0123456789abcdef' x 2;
+  =======
+my $use_config = 1;
+
+# prepare data for 
+
+my $key='0123456789abcdef' x 2;
+  >>>>>>> master
+  >>>>>>> master
 
 #
 # You can redefine engine to use using ENGINE_NAME environment variable
 # 
+  <<<<<<< magma_impl
 $engine=$ENV{'ENGINE_NAME'}||"gost";
+  =======
+  <<<<<<< openssl_1_1_0_release1
+$engine=$ENV{'ENGINE_NAME'}||"gost";
+  =======
+my $engine=$ENV{'ENGINE_NAME'}||"gost";
+  >>>>>>> master
+  >>>>>>> master
 
 # Reopen STDERR to eliminate extra output
 open STDERR, ">>","tests.err";
@@ -35,12 +70,29 @@ our $count=0;
 # -key - key (hex-encoded)
 # -iv  - IV (hex-encoded)
 # 
+  <<<<<<< magma_impl
+  =======
+  <<<<<<< openssl_1_1_0_release1
+  >>>>>>> master
 
 open F,">","test.cnf";
 if (defined($use_config) && $use_config) {
 	$eng_param = "";
 	open F,">","test.cnf";
 	print F <<EOCFG;
+  <<<<<<< magma_impl
+  =======
+  =======
+my $F;
+my $eng_param;
+
+open $F,">","test.cnf";
+if (defined($use_config) && $use_config) {
+	$eng_param = "";
+	open $F,">","test.cnf";
+	print $F <<EOCFG
+  >>>>>>> master
+  >>>>>>> master
 openssl_conf = openssl_def
 [openssl_def]
 engines = engines
@@ -53,7 +105,15 @@ EOCFG
 } else {
 	$eng_param = "-engine $engine"
 }
+  <<<<<<< magma_impl
 close F;
+  =======
+  <<<<<<< openssl_1_1_0_release1
+close F;
+  =======
+close $F;
+  >>>>>>> master
+  >>>>>>> master
 $ENV{'OPENSSL_CONF'}=abs_path('test.cnf');
 	
 sub crypt_test {
@@ -67,7 +127,15 @@ sub crypt_test {
 	my $ctext = `openssl enc ${eng_param} -e -$p{-alg} -K $p{-key} -iv $p{-iv} -in test$count.clear`;
 	is($?,0,"$p{-name} - encrypt successful");
 	is(unpack("H*",$ctext),$p{-ciphertext},"$p{-name} - ciphertext expected");
+  <<<<<<< magma_impl
 	open my $f, ">", "test$count.enc";
+  =======
+  <<<<<<< openssl_1_1_0_release1
+	open my $f, ">", "test$count.enc";
+  =======
+	open $f, ">", "test$count.enc";
+  >>>>>>> master
+  >>>>>>> master
 	print $f $ctext;
 	close $f;
 	my $otext = `openssl enc ${eng_param} -d -$p{-alg} -K $p{-key} -iv $p{-iv} -in test$count.enc`;
@@ -79,8 +147,18 @@ sub crypt_test {
 }
 
 $key = '0123456789ABCDEF' x 4;
+  <<<<<<< magma_impl
 $iv =  '0000000000000000';
 $clear1 = "The quick brown fox jumps over the lazy dog\n";
+  =======
+  <<<<<<< openssl_1_1_0_release1
+$iv =  '0000000000000000';
+$clear1 = "The quick brown fox jumps over the lazy dog\n";
+  =======
+my $iv =  '0000000000000000';
+my $clear1 = "The quick brown fox jumps over the lazy dog\n";
+  >>>>>>> master
+  >>>>>>> master
 
 crypt_test(-paramset=> "1.2.643.2.2.31.1", -key => $key, -iv => $iv,
 		   -cleartext => $clear1,
