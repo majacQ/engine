@@ -93,6 +93,8 @@ static INLINE void add512(union uint512_u * RESTRICT x,
         CF = OF;
 
         r->QWORD[i] = tmp;
+  <<<<<<< openssl_1_0_2
+  =======
   =======
     unsigned int CF = 0;
     unsigned int i;
@@ -121,6 +123,7 @@ static INLINE void add512(union uint512_u * RESTRICT x,
         if (sum != left)
             CF = (sum < left);
         x->QWORD[i] = sum;
+  >>>>>>> master
   >>>>>>> master
     }
 # endif /* !__x86_64__ */
