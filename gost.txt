@@ -1,6 +1,6 @@
-# Copyright 1999-2018 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 1999-2020 The OpenSSL Project Authors. All Rights Reserved.
 #
-# Licensed under the Apache License 2.0 (the "License").  You may not use
+# Licensed under the OpenSSL license (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
 # in the file LICENSE in the source distribution or at
 # https://www.openssl.org/source/license.html
@@ -10,14 +10,21 @@ GOST_F_DECODE_GOST_ALGOR_PARAMS:100:decode_gost_algor_params
 GOST_F_ENCODE_GOST_ALGOR_PARAMS:101:encode_gost_algor_params
 GOST_F_FILL_GOST_EC_PARAMS:102:fill_GOST_EC_params
 GOST_F_GET_ENCRYPTION_PARAMS:103:get_encryption_params
+GOST_F_GOST2015_GET_ASN1_PARAMS:158:gost2015_get_asn1_params
+GOST_F_GOST2015_SET_ASN1_PARAMS:159:gost2015_set_asn1_params
 GOST_F_GOST89_GET_ASN1_PARAMETERS:104:gost89_get_asn1_parameters
 GOST_F_GOST89_SET_ASN1_PARAMETERS:105:gost89_set_asn1_parameters
 GOST_F_GOST_CIPHER_CTL:106:gost_cipher_ctl
+GOST_F_GOST_CMS_SET_KARI_SHARED_INFO:156:gost_cms_set_kari_shared_info
+GOST_F_GOST_CMS_SET_KTRI_SHARED_INFO:157:gost_cms_set_ktri_shared_info
+GOST_F_GOST_CMS_SET_SHARED_INFO:155:gost_cms_set_shared_info
 GOST_F_GOST_EC_COMPUTE_PUBLIC:107:gost_ec_compute_public
 GOST_F_GOST_EC_KEYGEN:108:gost_ec_keygen
 GOST_F_GOST_EC_SIGN:109:gost_ec_sign
 GOST_F_GOST_EC_VERIFY:110:gost_ec_verify
 GOST_F_GOST_GRASSHOPPER_CIPHER_CTL:111:gost_grasshopper_cipher_ctl
+GOST_F_GOST_GRASSHOPPER_CIPHER_DO_CTRACPKM_OMAC:160:\
+	gost_grasshopper_cipher_do_ctracpkm_omac
 GOST_F_GOST_GRASSHOPPER_SET_ASN1_PARAMETERS:112:\
 	gost_grasshopper_set_asn1_parameters
 GOST_F_GOST_IMIT_CTRL:113:gost_imit_ctrl
@@ -45,6 +52,7 @@ GOST_F_PKEY_GOST_ECCP_DECRYPT:123:pkey_GOST_ECcp_decrypt
 GOST_F_PKEY_GOST_ECCP_ENCRYPT:124:pkey_GOST_ECcp_encrypt
 GOST_F_PKEY_GOST_EC_CTRL_STR_256:125:pkey_gost_ec_ctrl_str_256
 GOST_F_PKEY_GOST_EC_CTRL_STR_512:126:pkey_gost_ec_ctrl_str_512
+GOST_F_PKEY_GOST_EC_CTRL_STR_COMMON:154:pkey_gost_ec_ctrl_str_common
 GOST_F_PKEY_GOST_EC_DERIVE:127:pkey_gost_ec_derive
 GOST_F_PKEY_GOST_ENCRYPT:152:pkey_gost_encrypt
 GOST_F_PKEY_GOST_GRASSHOPPER_MAC_SIGNCTX_INIT:141:\
@@ -74,8 +82,10 @@ GOST_R_CIPHER_NOT_FOUND:103:cipher not found
 GOST_R_CTRL_CALL_FAILED:104:ctrl call failed
 GOST_R_ERROR_COMPUTING_EXPORT_KEYS:135:error computing export keys
 GOST_R_ERROR_COMPUTING_SHARED_KEY:105:error computing shared key
+GOST_R_ERROR_DECODING_PUBLIC_KEY:138:error decoding public key
 GOST_R_ERROR_PARSING_KEY_TRANSPORT_INFO:106:error parsing key transport info
 GOST_R_ERROR_POINT_MUL:107:error point mul
+GOST_R_ERROR_SETTING_PEER_KEY:139:error setting peer key
 GOST_R_INCOMPATIBLE_ALGORITHMS:108:incompatible algorithms
 GOST_R_INCOMPATIBLE_PEER_KEY:109:incompatible peer key
 GOST_R_INVALID_CIPHER:134:invalid cipher
@@ -102,3 +112,4 @@ GOST_R_SIGNATURE_PARTS_GREATER_THAN_Q:128:signature parts greater than q
 GOST_R_UKM_NOT_SET:129:ukm not set
 GOST_R_UNSUPPORTED_CIPHER_CTL_COMMAND:130:unsupported cipher ctl command
 GOST_R_UNSUPPORTED_PARAMETER_SET:131:unsupported parameter set
+GOST_R_UNSUPPORTED_RECIPIENT_INFO:137:unsupported recipient info

@@ -7,7 +7,6 @@
  * See https://www.openssl.org/source/license.html for details
  */
 
-#include "e_gost_err.h"
 #include "gost_lcl.h"
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -16,6 +15,8 @@
 #include <openssl/obj_mac.h>
 #include <openssl/ec.h>
 #include <openssl/bn.h>
+#include <openssl/store.h>
+#include <openssl/engine.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -37,11 +38,12 @@
 #define cDGREEN	"\033[0;32m"
 #define cBLUE	"\033[1;34m"
 #define cDBLUE	"\033[0;34m"
+#define cCYAN	"\033[1;36m"
 #define cNORM	"\033[m"
 #define TEST_ASSERT(e) {if ((test = (e))) \
-		 printf(cRED "  Test FAILED\n" cNORM); \
+		 printf(cRED "  Test FAILED" cNORM "\n"); \
 	     else \
-		 printf(cGREEN "  Test passed\n" cNORM);}
+		 printf(cGREEN "  Test passed" cNORM "\n");}
 
 struct test_sign {
     const char *name;
@@ -81,17 +83,17 @@ static void hexdump(const void *ptr, size_t len)
 static void print_test_tf(int err, int val, const char *t, const char *f)
 {
     if (err == 1)
-	printf(cGREEN "%s\n" cNORM, t);
+	printf(cGREEN "%s" cNORM "\n", t);
     else
-	printf(cRED "%s [%d]\n" cNORM, f, val);
+	printf(cRED "%s [%d]" cNORM "\n", f, val);
 }
 
 static void print_test_result(int err)
 {
     if (err == 1)
-	printf(cGREEN "success\n" cNORM);
+	printf(cGREEN "success" cNORM "\n");
     else if (err == 0)
-	printf(cRED "failure\n" cNORM);
+	printf(cRED "failure" cNORM "\n");
     else
 	ERR_print_errors_fp(stderr);
 }
@@ -101,7 +103,7 @@ static int test_sign(struct test_sign *t)
     int ret = 0, err;
     size_t len = t->bits / 8;
 
-    printf(cBLUE "Test %s:\n" cNORM, t->name);
+    printf(cBLUE "Test %s:" cNORM "\n", t->name);
 
     /* Signature type from size. */
     int type = 0;
@@ -133,6 +135,85 @@ static int test_sign(struct test_sign *t)
     if (err != 1)
 	return -1;
 
+    /* Convert to PEM and back. */
+    BIO *bp;
+    T(bp = BIO_new(BIO_s_secmem()));
+    T(PEM_write_bio_PrivateKey(bp, priv_key, NULL, NULL, 0, NULL, NULL));
+    pkey = NULL;
+    T(PEM_read_bio_PrivateKey(bp, &pkey, NULL, NULL));
+    printf("\tPEM_read_bio_PrivateKey:");
+    /* Yes, it compares only public part. */
+    err = !EVP_PKEY_cmp(priv_key, pkey);
+    print_test_result(!err);
+    ret |= err;
+    EVP_PKEY_free(pkey);
+
+    /* Convert to DER and back, using _PrivateKey_bio API. */
+    T(BIO_reset(bp));
+    T(i2d_PrivateKey_bio(bp, priv_key));
+    T(d2i_PrivateKey_bio(bp, &pkey));
+    printf("\td2i_PrivateKey_bio:\t");
+    err = !EVP_PKEY_cmp(priv_key, pkey);
+    print_test_result(!err);
+    ret |= err;
+    EVP_PKEY_free(pkey);
+
+#if OPENSSL_VERSION_MAJOR >= 3
+    /* Try d2i_PrivateKey_ex_bio, added in 3.0. */
+    T(BIO_reset(bp));
+    T(i2d_PrivateKey_bio(bp, priv_key));
+    T(d2i_PrivateKey_ex_bio(bp, &pkey, NULL, NULL));
+    printf("\td2i_PrivateKey_ex_bio:\t");
+    err = !EVP_PKEY_cmp(priv_key, pkey);
+    print_test_result(!err);
+    ret |= err;
+    EVP_PKEY_free(pkey);
+#endif
+
+    /* Convert to DER and back, using OSSL_STORE API. */
+    T(BIO_reset(bp));
+    T(i2d_PrivateKey_bio(bp, priv_key));
+    printf("\tOSSL_STORE_attach:\t");
+    fflush(stdout);
+    pkey = NULL;
+    OSSL_STORE_CTX *cts;
+    T(cts = OSSL_STORE_attach(bp, "file", NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+    for (;;) {
+	OSSL_STORE_INFO *info = OSSL_STORE_load(cts);
+	if (!info) {
+	    ERR_print_errors_fp(stderr);
+	    T(OSSL_STORE_eof(cts));
+	    break;
+	}
+	if (OSSL_STORE_INFO_get_type(info) == OSSL_STORE_INFO_PKEY) {
+	    T((pkey = OSSL_STORE_INFO_get1_PKEY(info)));
+	}
+	OSSL_STORE_INFO_free(info);
+    }
+    OSSL_STORE_close(cts);
+    if (pkey) {
+	err = !EVP_PKEY_cmp(priv_key, pkey);
+	print_test_result(!err);
+	ret |= err;
+	EVP_PKEY_free(pkey);
+    } else
+	printf(cCYAN "skipped" cNORM "\n");
+    BIO_free(bp);
+
+    /* Convert to DER and back, using memory API. */
+    unsigned char *kptr = NULL;
+    int klen;
+    T(klen = i2d_PrivateKey(priv_key, &kptr));
+    const unsigned char *tptr = kptr; /* will be moved by d2i_PrivateKey */
+    pkey = NULL;
+    T(d2i_PrivateKey(type, &pkey, &tptr, klen));
+    printf("\td2i_PrivateKey:\t\t");
+    err = !EVP_PKEY_cmp(priv_key, pkey);
+    print_test_result(!err);
+    ret |= err;
+    EVP_PKEY_free(pkey);
+    OPENSSL_free(kptr);
+
     /* Create another key using string interface. */
     EVP_PKEY *key1;
     T(key1 = EVP_PKEY_new());
@@ -145,6 +226,7 @@ static int test_sign(struct test_sign *t)
     err = EVP_PKEY_keygen(ctx1, &key2);
     printf("\tEVP_PKEY_*_str:\t\t");
     print_test_result(err);
+    ret |= !err;
 
     /* Check if key type and curve_name match expected values. */
     int id = EVP_PKEY_id(key2);
@@ -157,7 +239,7 @@ static int test_sign(struct test_sign *t)
     const EC_GROUP *group = EC_KEY_get0_group(ec);
     int curve_name = EC_GROUP_get_curve_name(group);
     err = curve_name == t->nid;
-    printf("\tcurve_name (%d):\t", t->nid);
+    printf("\tcurve_name (%u):\t", t->nid);
     print_test_tf(err, curve_name, "match", "mismatch");
     ret |= !err;
 
@@ -236,24 +318,15 @@ int main(int argc, char **argv)
 {
     int ret = 0;
 
-    setenv("OPENSSL_ENGINES", ENGINE_DIR, 0);
     OPENSSL_add_all_algorithms_conf();
-    ERR_load_crypto_strings();
-    ENGINE *eng;
-    T(eng = ENGINE_by_id("gost"));
-    T(ENGINE_init(eng));
-    T(ENGINE_set_default(eng, ENGINE_METHOD_ALL));
 
     struct test_sign *sp;
     for (sp = test_signs; sp->name; sp++)
 	ret |= test_sign(sp);
 
-    ENGINE_finish(eng);
-    ENGINE_free(eng);
-
     if (ret)
-	printf(cDRED "= Some tests FAILED!\n" cNORM);
+	printf(cDRED "= Some tests FAILED!" cNORM "\n");
     else
-	printf(cDGREEN "= All tests passed!\n" cNORM);
+	printf(cDGREEN "= All tests passed!" cNORM "\n");
     return ret;
 }
