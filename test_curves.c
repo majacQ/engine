@@ -5,7 +5,6 @@
  * See https://www.openssl.org/source/license.html for details
  */
 
-#include "e_gost_err.h"
 #include "gost_lcl.h"
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -29,10 +28,13 @@
 #define cBLUE	"\033[1;34m"
 #define cDBLUE	"\033[0;34m"
 #define cNORM	"\033[m"
-#define TEST_ASSERT(e) {if ((test = (e))) \
-		 printf(cRED "  Test FAILED\n" cNORM); \
-	     else \
-		 printf(cGREEN "  Test passed\n" cNORM);}
+#define TEST_ASSERT(e) { \
+	test = e; \
+	if (test) \
+		printf(cRED "  Test FAILED" cNORM "\n"); \
+	else \
+		printf(cGREEN "  Test passed" cNORM "\n"); \
+}
 
 struct test_curve {
     int nid;
@@ -90,7 +92,7 @@ static int parameter_test(struct test_curve *tc)
     printf("\n");
 
     if (!OBJ_nid2obj(nid)) {
-	printf(cRED "NID %d not found\n" cNORM, nid);
+	printf(cRED "NID %d not found" cNORM "\n", nid);
 	return 1;
     }
 
@@ -106,7 +108,7 @@ static int parameter_test(struct test_curve *tc)
     EC_KEY *ec;
     T(ec = EC_KEY_new());
     if (!fill_GOST_EC_params(ec, nid)) {
-	printf(cRED "fill_GOST_EC_params FAIL\n" cNORM);
+	printf(cRED "fill_GOST_EC_params FAIL" cNORM "\n");
 	ERR_print_errors_fp(stderr);
 	return 1;
     }
@@ -222,25 +224,14 @@ int main(int argc, char **argv)
 {
     int ret = 0;
 
-    setenv("OPENSSL_ENGINES", ENGINE_DIR, 0);
-    OPENSSL_add_all_algorithms_conf();
-    ERR_load_crypto_strings();
-    ENGINE *eng;
-    T(eng = ENGINE_by_id("gost"));
-    T(ENGINE_init(eng));
-    T(ENGINE_set_default(eng, ENGINE_METHOD_ALL));
-
     struct test_curve *tc;
     for (tc = test_curves; tc->nid; tc++) {
 	ret |= parameter_test(tc);
     }
 
-    ENGINE_finish(eng);
-    ENGINE_free(eng);
-
     if (ret)
-	printf(cDRED "= Some tests FAILED!\n" cNORM);
+	printf(cDRED "= Some tests FAILED!" cNORM "\n");
     else
-	printf(cDGREEN "= All tests passed!\n" cNORM);
+	printf(cDGREEN "= All tests passed!" cNORM "\n");
     return ret;
 }

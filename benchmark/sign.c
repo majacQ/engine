@@ -40,27 +40,24 @@ static EVP_PKEY *create_key(const char *algname, const char *param)
 	EVP_PKEY *key1 = EVP_PKEY_new(), *newkey = NULL;
 	EVP_PKEY_CTX *ctx = NULL;
 
-	if(EVP_PKEY_set_type_str(key1, algname, strlen(algname)) <= 0)
-	{
-		goto err;
-	}
-	if(!(ctx = EVP_PKEY_CTX_new(key1, NULL)))
-	{
-		goto err;
-	}
-	EVP_PKEY_keygen_init(ctx);
-	if(ERR_peek_last_error())
-	{
-		goto err;
-	}
-	if(EVP_PKEY_CTX_ctrl_str(ctx, "paramset", param) <= 0)
-	{
-		goto err;
-	}
-	if(EVP_PKEY_keygen(ctx, &newkey) <= 0)
-	{
-		goto err;
-	}
+	if (EVP_PKEY_set_type_str(key1, algname, strlen(algname)) <= 0)
+		  goto err;
+
+	if (!(ctx = EVP_PKEY_CTX_new(key1, NULL)))
+		  goto err;
+
+	if (EVP_PKEY_keygen_init(ctx) == 0)
+		  goto err;
+
+	if (ERR_peek_last_error())
+		  goto err;
+
+	if (EVP_PKEY_CTX_ctrl_str(ctx, "paramset", param) <= 0)
+		  goto err;
+
+	if (EVP_PKEY_keygen(ctx, &newkey) <= 0)
+		  goto err;
+
 err:
 	if(ctx)
 		EVP_PKEY_CTX_free(ctx);
@@ -85,8 +82,6 @@ int main(int argc, char **argv)
 	opterr = 0;
 	while((option = getopt(argc, argv, "l:c:C")) >= 0)
 	{
-		if(option == ':') option = optopt;
-		if(optarg && (optarg[0] == '-')) { optind--; optarg = NULL; }
 		switch (option)
 		{
 			case 'l':
@@ -153,8 +148,8 @@ int main(int argc, char **argv)
 		if (pass == 0) { /* sign */
 		    for (i = 0; i < cycles; i++) {
 			EVP_SignInit(md_ctx, mdtype);
-			EVP_SignUpdate(md_ctx, data, data_len);
-			err = EVP_SignFinal(md_ctx, &sigbuf[siglen * i],
+			err = EVP_SignUpdate(md_ctx, data, data_len)
+			   && EVP_SignFinal(md_ctx, &sigbuf[siglen * i],
 			    (unsigned int *)&siglen, pkey);
 			if (err != 1)
 			    printf("!");
@@ -163,8 +158,8 @@ int main(int argc, char **argv)
 		} else { /* verify */
 		    for (i = 0; i < cycles; i++) {
 			EVP_VerifyInit(md_ctx, mdtype);
-			EVP_VerifyUpdate(md_ctx, data, data_len);
-			err = EVP_VerifyFinal(md_ctx, &sigbuf[siglen * i],
+			err = EVP_VerifyUpdate(md_ctx, data, data_len)
+			   && EVP_VerifyFinal(md_ctx, &sigbuf[siglen * i],
 			    siglen, pkey);
 			EVP_MD_CTX_reset(md_ctx);
 			if (err != 1)

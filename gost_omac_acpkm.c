@@ -1,5 +1,9 @@
 /*
+  <<<<<<< magma_impl
  * Copyright (C) 2018 vt@altlinux.org. All Rights Reserved.
+  =======
+ * Copyright (C) 2018,2020 Vitaly Chikunov <vt@altlinux.org>. All Rights Reserved.
+  >>>>>>> master
  * Copyright (c) 2010 The OpenSSL Project.  All rights reserved.
  *
  * Contents licensed under the terms of the OpenSSL license
@@ -68,6 +72,10 @@ static CMAC_ACPKM_CTX *CMAC_ACPKM_CTX_new(void)
     }
     ctx->actx = EVP_CIPHER_CTX_new();
     if (ctx->actx == NULL) {
+  <<<<<<< magma_impl
+  =======
+        EVP_CIPHER_CTX_free(ctx->cctx);
+  >>>>>>> master
         OPENSSL_free(ctx);
         return NULL;
     }
@@ -150,13 +158,21 @@ static int CMAC_ACPKM_Init(CMAC_ACPKM_CTX *ctx, const void *key, size_t keylen,
     /* Non-NULL key means initialisation is complete */
     if (key) {
         unsigned char acpkm_iv[EVP_MAX_BLOCK_LENGTH];
+  <<<<<<< magma_impl
+  =======
+        int block_size, key_len;
+  >>>>>>> master
 
         /* Initialize CTR for ACPKM-Master */
         if (!EVP_CIPHER_CTX_cipher(ctx->actx))
             return 0;
         /* block size of ACPKM cipher could be 1, but,
          * cbc cipher is same with correct block_size */
+  <<<<<<< magma_impl
         const int block_size = EVP_CIPHER_CTX_block_size(ctx->cctx);
+  =======
+        block_size = EVP_CIPHER_CTX_block_size(ctx->cctx);
+  >>>>>>> master
         /* Wide IV = 1^{n/2} || 0,
          * where a^r denotes the string that consists of r 'a' bits */
         memset(acpkm_iv, 0xff, block_size / 2);
@@ -164,7 +180,11 @@ static int CMAC_ACPKM_Init(CMAC_ACPKM_CTX *ctx, const void *key, size_t keylen,
         if (!EVP_EncryptInit_ex(ctx->actx, NULL, NULL, key, acpkm_iv))
             return 0;
         /* EVP_CIPHER key_len may be different from EVP_CIPHER_CTX key_len */
+  <<<<<<< magma_impl
         int key_len = EVP_CIPHER_key_length(EVP_CIPHER_CTX_cipher(ctx->actx));
+  =======
+        key_len = EVP_CIPHER_key_length(EVP_CIPHER_CTX_cipher(ctx->actx));
+  >>>>>>> master
 
         /* Generate first key material (K^1 || K^1_1) */
         if (!EVP_Cipher(ctx->actx, ctx->km, zero_iv, key_len + block_size))
@@ -254,7 +274,12 @@ static int CMAC_ACPKM_Update(CMAC_ACPKM_CTX *ctx, const void *in, size_t dlen)
 static int CMAC_ACPKM_Final(CMAC_ACPKM_CTX *ctx, unsigned char *out,
                             size_t *poutlen)
 {
+  <<<<<<< magma_impl
     int i, bl, lb;
+  =======
+    int i, bl, lb, key_len;
+    unsigned char *k1, k2[EVP_MAX_BLOCK_LENGTH];
+  >>>>>>> master
     if (ctx->nlast_block == -1)
         return 0;
     bl = EVP_CIPHER_CTX_block_size(ctx->cctx);
@@ -265,10 +290,16 @@ static int CMAC_ACPKM_Final(CMAC_ACPKM_CTX *ctx, unsigned char *out,
 
     if (!CMAC_ACPKM_Mesh(ctx))
         return 0;
+  <<<<<<< magma_impl
     int key_len = EVP_CIPHER_key_length(EVP_CIPHER_CTX_cipher(ctx->actx));
     /* Keys k1 and k2 */
     unsigned char *k1 = ctx->km + key_len;
     unsigned char k2[EVP_MAX_BLOCK_LENGTH];
+  =======
+    key_len = EVP_CIPHER_key_length(EVP_CIPHER_CTX_cipher(ctx->actx));
+    /* Keys k1 and k2 */
+    k1 = ctx->km + key_len;
+  >>>>>>> master
     make_kn(k2, ctx->km + key_len, bl);
 
     /* Is last block complete? */
@@ -331,7 +362,11 @@ static int omac_acpkm_imit_update(EVP_MD_CTX *ctx, const void *data,
 {
     OMAC_ACPKM_CTX *c = EVP_MD_CTX_md_data(ctx);
     if (!c->key_set) {
+  <<<<<<< magma_impl
+        GOSTerr(GOST_F_OMAC_IMIT_UPDATE, GOST_R_MAC_KEY_NOT_SET);
+  =======
         GOSTerr(GOST_F_OMAC_ACPKM_IMIT_UPDATE, GOST_R_MAC_KEY_NOT_SET);
+  >>>>>>> master
         return 0;
     }
 
@@ -345,7 +380,11 @@ int omac_acpkm_imit_final(EVP_MD_CTX *ctx, unsigned char *md)
     size_t mac_size = sizeof(mac);
 
     if (!c->key_set) {
+  <<<<<<< magma_impl
+        GOSTerr(GOST_F_OMAC_IMIT_FINAL, GOST_R_MAC_KEY_NOT_SET);
+  =======
         GOSTerr(GOST_F_OMAC_ACPKM_IMIT_FINAL, GOST_R_MAC_KEY_NOT_SET);
+  >>>>>>> master
         return 0;
     }
 
@@ -355,7 +394,11 @@ int omac_acpkm_imit_final(EVP_MD_CTX *ctx, unsigned char *md)
     return 1;
 }
 
+  <<<<<<< magma_impl
 int omac_acpkm_imit_copy(EVP_MD_CTX *to, const EVP_MD_CTX *from)
+  =======
+static int omac_acpkm_imit_copy(EVP_MD_CTX *to, const EVP_MD_CTX *from)
+  >>>>>>> master
 {
     OMAC_ACPKM_CTX *c_to = EVP_MD_CTX_md_data(to);
     const OMAC_ACPKM_CTX *c_from = EVP_MD_CTX_md_data(from);
@@ -381,7 +424,11 @@ int omac_acpkm_imit_copy(EVP_MD_CTX *to, const EVP_MD_CTX *from)
 }
 
 /* Clean up imit ctx */
+  <<<<<<< magma_impl
 int omac_acpkm_imit_cleanup(EVP_MD_CTX *ctx)
+  =======
+static int omac_acpkm_imit_cleanup(EVP_MD_CTX *ctx)
+  >>>>>>> master
 {
     OMAC_ACPKM_CTX *c = EVP_MD_CTX_md_data(ctx);
 
@@ -399,7 +446,11 @@ static int omac_acpkm_key(OMAC_ACPKM_CTX *c, const EVP_CIPHER *cipher,
 
     c->cmac_ctx = CMAC_ACPKM_CTX_new();
     if (c->cmac_ctx == NULL) {
+  <<<<<<< magma_impl
+        GOSTerr(GOST_F_OMAC_KEY, ERR_R_MALLOC_FAILURE);
+  =======
         GOSTerr(GOST_F_OMAC_ACPKM_KEY, ERR_R_MALLOC_FAILURE);
+  >>>>>>> master
         return 0;
     }
 
@@ -425,22 +476,36 @@ int omac_acpkm_imit_ctrl(EVP_MD_CTX *ctx, int type, int arg, void *ptr)
             if (c->cipher_nid == NID_undef) {
                 switch (EVP_MD_nid(md)) {
                 case NID_grasshopper_mac:
+  <<<<<<< magma_impl
+  =======
                 case NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac:
+   >>>>>>> master
                     c->cipher_nid = NID_grasshopper_cbc;
                     break;
                 }
             }
             cipher = EVP_get_cipherbynid(c->cipher_nid);
             if (cipher == NULL) {
+  <<<<<<< magma_impl
+                GOSTerr(GOST_F_OMAC_IMIT_CTRL, GOST_R_CIPHER_NOT_FOUND);
+            }
+            if (EVP_MD_meth_get_init(EVP_MD_CTX_md(ctx)) (ctx) <= 0) {
+                GOSTerr(GOST_F_OMAC_IMIT_CTRL, GOST_R_MAC_KEY_NOT_SET);
+  =======
                 GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_CIPHER_NOT_FOUND);
             }
             if (EVP_MD_meth_get_init(EVP_MD_CTX_md(ctx)) (ctx) <= 0) {
                 GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_MAC_KEY_NOT_SET);
+  >>>>>>> master
                 return 0;
             }
             EVP_MD_CTX_set_flags(ctx, EVP_MD_CTX_FLAG_NO_INIT);
             if (c->key_set) {
+  <<<<<<< magma_impl
+                GOSTerr(GOST_F_OMAC_IMIT_CTRL, GOST_R_BAD_ORDER);
+  =======
                 GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_BAD_ORDER);
+  >>>>>>> master
                 return 0;
             }
             if (arg == 0) {
@@ -449,7 +514,11 @@ int omac_acpkm_imit_ctrl(EVP_MD_CTX *ctx, int type, int arg, void *ptr)
             } else if (arg == 32) {
                 return omac_acpkm_key(c, cipher, ptr, 32);
             }
+  <<<<<<< magma_impl
+            GOSTerr(GOST_F_OMAC_IMIT_CTRL, GOST_R_INVALID_MAC_KEY_SIZE);
+  =======
             GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_INVALID_MAC_KEY_SIZE);
+  >>>>>>> master
             return 0;
         }
     case EVP_CTRL_KEY_MESH:
@@ -465,12 +534,19 @@ int omac_acpkm_imit_ctrl(EVP_MD_CTX *ctx, int type, int arg, void *ptr)
             }
             return 1;
         }
+  <<<<<<< magma_impl
     case EVP_MD_CTRL_MAC_LEN:
+  =======
+    case EVP_MD_CTRL_XOF_LEN:   /* Supported in OpenSSL */
+  >>>>>>> master
         {
             OMAC_ACPKM_CTX *c = EVP_MD_CTX_md_data(ctx);
             switch (c->cipher_nid) {
             case NID_grasshopper_cbc:
                 if (arg < 1 || arg > 16) {
+  <<<<<<< magma_impl
+                    GOSTerr(GOST_F_OMAC_IMIT_CTRL, GOST_R_INVALID_MAC_SIZE);
+  =======
                     GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_INVALID_MAC_SIZE);
                     return 0;
                 }
@@ -479,6 +555,7 @@ int omac_acpkm_imit_ctrl(EVP_MD_CTX *ctx, int type, int arg, void *ptr)
             case NID_magma_cbc:
                 if (arg < 1 || arg > 8) {
                     GOSTerr(GOST_F_OMAC_ACPKM_IMIT_CTRL, GOST_R_INVALID_MAC_SIZE);
+  >>>>>>> master
                     return 0;
                 }
                 c->dgst_size = arg;
@@ -494,6 +571,7 @@ int omac_acpkm_imit_ctrl(EVP_MD_CTX *ctx, int type, int arg, void *ptr)
     }
 }
 
+  <<<<<<< magma_impl
 static EVP_MD *_hidden_grasshopper_omac_acpkm_md = NULL;
 
 EVP_MD *grasshopper_omac_acpkm(void)
@@ -527,3 +605,18 @@ void grasshopper_omac_acpkm_destroy(void)
     EVP_MD_meth_free(_hidden_grasshopper_omac_acpkm_md);
     _hidden_grasshopper_omac_acpkm_md = NULL;
 }
+  =======
+GOST_digest kuznyechik_ctracpkm_omac_digest = {
+    .nid = NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm_omac,
+    .result_size = MAX_GOST_OMAC_ACPKM_SIZE,
+    .input_blocksize = GRASSHOPPER_BLOCK_SIZE,
+    .app_datasize = sizeof(OMAC_ACPKM_CTX),
+    .flags = EVP_MD_FLAG_XOF,
+    .init = grasshopper_omac_acpkm_init,
+    .update = omac_acpkm_imit_update,
+    .final = omac_acpkm_imit_final,
+    .copy = omac_acpkm_imit_copy,
+    .cleanup = omac_acpkm_imit_cleanup,
+    .ctrl = omac_acpkm_imit_ctrl,
+};
+  >>>>>>> master

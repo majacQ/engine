@@ -18,22 +18,6 @@ static char *gost_params[GOST_PARAM_MAX + 1] = { NULL };
 static const char *gost_envnames[] =
     { "CRYPT_PARAMS", "GOST_PBE_HMAC", "GOST_PK_FORMAT" };
 
-const ENGINE_CMD_DEFN gost_cmds[] = {
-    {GOST_CTRL_CRYPT_PARAMS,
-     "CRYPT_PARAMS",
-     "OID of default GOST 28147-89 parameters",
-     ENGINE_CMD_FLAG_STRING},
-    {GOST_CTRL_PBE_PARAMS,
-     "PBE_PARAMS",
-     "Shortname of default digest alg for PBE",
-     ENGINE_CMD_FLAG_STRING},
-    {GOST_CTRL_PK_FORMAT,
-     "GOST_PK_FORMAT",
-     "Private key format params",
-     ENGINE_CMD_FLAG_STRING},
-    {0, NULL, NULL, 0}
-};
-
 void gost_param_free()
 {
     int i;
@@ -59,7 +43,7 @@ int gost_control_func(ENGINE *e, int cmd, long i, void *p, void (*f) (void))
 const char *get_gost_engine_param(int param)
 {
     char *tmp;
-    if (param < 0 || param > GOST_PARAM_MAX)
+    if (param < 0 || param >= GOST_PARAM_MAX)
         return NULL;
     if (gost_params[param] != NULL) {
         return gost_params[param];
@@ -76,7 +60,7 @@ const char *get_gost_engine_param(int param)
 int gost_set_default_param(int param, const char *value)
 {
     const char *tmp;
-    if (param < 0 || param > GOST_PARAM_MAX)
+    if (param < 0 || param >= GOST_PARAM_MAX)
         return 0;
     tmp = getenv(gost_envnames[param]);
 

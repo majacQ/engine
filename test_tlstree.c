@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2019-2020 Dmitry Belyavskiy <beldmit@gmail.com>
+ *
+ * Contents licensed under the terms of the OpenSSL license
+ * See https://www.openssl.org/source/license.html for details
+ */
 # include <stdio.h>
 # include <string.h>
 # include <openssl/err.h>
@@ -95,7 +101,7 @@ int main(void)
 	int i;
 
 	OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, NULL);
-		
+
 	memset(data63, 0, 4096);
 
 	md = EVP_get_digestbynid(NID_grasshopper_mac);
@@ -120,14 +126,17 @@ int main(void)
 
 	ciph = EVP_get_cipherbynid(NID_id_tc26_cipher_gostr3412_2015_kuznyechik_ctracpkm);
 	enc = EVP_CIPHER_CTX_new();
-	EVP_EncryptInit_ex(enc, ciph, NULL, enc_key, full_iv);
+	if (EVP_EncryptInit_ex(enc, ciph, NULL, enc_key, full_iv) <= 0) {
+		fprintf(stderr, "Internal error");
+		exit(1);
+	}
 
 	for (i = 7; i >= 0; i--) {
 		++seq0[i];
 		if (seq0[i] != 0)
 			break;
 	}
-	EVP_CIPHER_CTX_ctrl(enc, EVP_CTRL_TLS1_2_TLSTREE, 0, seq0);
+	EVP_CIPHER_CTX_ctrl(enc, EVP_CTRL_TLSTREE, 0, seq0);
 	EVP_Cipher(enc, data0_processed, data0, sizeof(data0));
 	EVP_Cipher(enc, data0_processed+sizeof(data0), mac0, 16);
 
@@ -161,7 +170,7 @@ int main(void)
 		if (seq63[i] != 0)
 			break;
 	}
-	EVP_CIPHER_CTX_ctrl(enc, EVP_CTRL_TLS1_2_TLSTREE, 0, seq63);
+	EVP_CIPHER_CTX_ctrl(enc, EVP_CTRL_TLSTREE, 0, seq63);
 	EVP_Cipher(enc, data63_processed, data63, sizeof(data63));
 	EVP_Cipher(enc, data63_processed+sizeof(data63), mac63, 16);
 
